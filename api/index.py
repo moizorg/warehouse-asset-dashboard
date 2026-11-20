@@ -1,5 +1,6 @@
 import os
 import sys
+import random
 from pathlib import Path
 from PIL import Image, ImageEnhance
 
@@ -50,6 +51,35 @@ TINTS = {
     "Safety Equipment": (224, 178, 52),
 }
 
+HUE_SHIFTS = {
+    "Machinery": (10, 55, 115, 175, 235),
+    "Tools": (0, 35, 85, 145, 205),
+    "Electronics": (0, 50, 105, 165, 220),
+    "Furniture": (0, 40, 95, 155, 210),
+    "Vehicles": (0, 30, 80, 140, 200),
+    "Safety Equipment": (0, 25, 70, 125, 185),
+}
+
+
+def apply_asset_color_variant(image, category, occurrence):
+    hue_shift = round(HUE_SHIFTS[category][occurrence] * 255 / 360)
+    hsv = image.convert("HSV")
+    hue, saturation, value = hsv.split()
+    hue = hue.point(lambda channel: (channel + hue_shift) % 256)
+    saturation = saturation.point(
+        lambda channel: max(0, min(255, int(channel * (1.12 + occurrence * 0.08))))
+    )
+    value = value.point(
+        lambda channel: max(0, min(255, int(channel * (0.94 + occurrence * 0.025))))
+    )
+    variant = Image.merge("HSV", (hue, saturation, value)).convert("RGB")
+    tint = Image.new("RGB", variant.size, TINTS[category])
+    return Image.blend(
+        variant,
+        tint,
+        0.055 + occurrence * 0.018,
+    )
+
 def seed_demo_assets():
     with app.app_context():
         database = app.extensions["database"]
@@ -62,47 +92,41 @@ def seed_demo_assets():
         if total:
             return
 
-        categories = list(CATEGORY_SOURCES)
-        asset_number = 1
+        categories = [
+            category
+            for category in CATEGORY_SOURCES
+            for _ in range(5)
+        ]
+        random.Random(2026).shuffle(categories)
+
+        category_counts = {category: 0 for category in CATEGORY_SOURCES}
         for category in categories:
+            category_counts[category] += 1
+            occurrence = category_counts[category] - 1
+            identifier = (
+                f"WH-{CATEGORY_PREFIXES[category]}-{category_counts[category]:03d}"
+            )
+            filename = f"sample-{identifier.lower().replace('/', '-')}.jpg"
             source_name = CATEGORY_SOURCES[category]
-            for position in range(1, 6):
-                identifier = f"WH-{CATEGORY_PREFIXES[category]}-{asset_number:03d}"
-                filename = f"sample-{identifier.lower().replace('/', '-')}.jpg"
 
-                with Image.open(source_folder / source_name).convert("RGB") as base:
-                    base = base.resize((960, 720), Image.Resampling.LANCZOS)
-                    base = ImageEnhance.Brightness(base).enhance(
-                        0.82 + ((asset_number % 7) * 0.055)
-                    )
-                    base = ImageEnhance.Contrast(base).enhance(
-                        1.05 + ((asset_number % 5) * 0.07)
-                    )
-                    base = ImageEnhance.Color(base).enhance(
-                        0.82 + ((asset_number % 6) * 0.12)
-                    )
-                    tint = Image.new("RGB", base.size, TINTS[category])
-                    base = Image.blend(
-                        base,
-                        tint,
-                        0.035 + ((asset_number % 4) * 0.012),
-                    )
-                    base.save(upload_folder / filename, "JPEG", quality=88)
+            with Image.open(source_folder / source_name).convert("RGB") as base:
+                base = base.resize((960, 720), Image.Resampling.LANCZOS)
+                base = apply_asset_color_variant(base, category, occurrence)
+                base.save(upload_folder / filename, "JPEG", quality=88)
 
-                with database.connect() as connection:
-                    connection.execute(
-                        """
-                        INSERT INTO assets
-                        (asset_identifier, category, photograph_path, created_at)
-                        VALUES (?, ?, ?, datetime('now'))
-                        """,
-                        (
-                            identifier,
-                            category,
-                            f"uploads/{filename}",
-                        ),
-                    )
-                asset_number += 1
+            with database.connect() as connection:
+                connection.execute(
+                    """
+                    INSERT INTO assets
+                    (asset_identifier, category, photograph_path, created_at)
+                    VALUES (?, ?, ?, datetime('now'))
+                    """,
+                    (
+                        identifier,
+                        category,
+                        f"uploads/{filename}",
+                    ),
+                )
 
 
 seed_demo_assets()

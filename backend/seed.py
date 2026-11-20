@@ -1,4 +1,5 @@
 from pathlib import Path
+import random
 from PIL import Image, ImageEnhance
 from app import create_app
 
@@ -7,7 +8,6 @@ app = create_app()
 
 photo_dir = Path(__file__).resolve().parent / "seed_assets"
 
-samples = []
 category_names = [
     "Machinery",
     "Tools",
@@ -24,17 +24,24 @@ category_photos = {
     "Vehicles": "vehicles.jpg",
     "Safety Equipment": "safety.jpg",
 }
-for index in range(1, 31):
-    category = category_names[(index - 1) % len(category_names)]
-    prefix = {
-        "Machinery": "MCH",
-        "Tools": "TLS",
-        "Electronics": "ELC",
-        "Furniture": "FRN",
-        "Vehicles": "VHC",
-        "Safety Equipment": "SFT",
-    }[category]
-    samples.append((f"WH-{prefix}-{index:03d}", category))
+
+category_prefixes = {
+    "Machinery": "MCH",
+    "Tools": "TLS",
+    "Electronics": "ELC",
+    "Furniture": "FRN",
+    "Vehicles": "VHC",
+    "Safety Equipment": "SFT",
+}
+
+category_hue_shifts = {
+    "Machinery": (10, 55, 115, 175, 235),
+    "Tools": (0, 35, 85, 145, 205),
+    "Electronics": (0, 50, 105, 165, 220),
+    "Furniture": (0, 40, 95, 155, 210),
+    "Vehicles": (0, 30, 80, 140, 200),
+    "Safety Equipment": (0, 25, 70, 125, 185),
+}
 
 category_color_tints = {
     "Machinery": (232, 114, 62),
@@ -44,6 +51,26 @@ category_color_tints = {
     "Vehicles": (112, 130, 150),
     "Safety Equipment": (224, 178, 52),
 }
+
+
+def apply_asset_color_variant(image, category, occurrence):
+    hue_shift = round(category_hue_shifts[category][occurrence] * 255 / 360)
+    hsv = image.convert("HSV")
+    hue, saturation, value = hsv.split()
+    hue = hue.point(lambda channel: (channel + hue_shift) % 256)
+    saturation = saturation.point(
+        lambda channel: max(0, min(255, int(channel * (1.12 + occurrence * 0.08))))
+    )
+    value = value.point(
+        lambda channel: max(0, min(255, int(channel * (0.94 + occurrence * 0.025))))
+    )
+    variant = Image.merge("HSV", (hue, saturation, value)).convert("RGB")
+    tint = Image.new("RGB", variant.size, category_color_tints[category])
+    return Image.blend(
+        variant,
+        tint,
+        0.055 + occurrence * 0.018,
+    )
 
 with app.app_context():
     database = app.extensions["database"]
@@ -56,27 +83,25 @@ with app.app_context():
     with database.connect() as connection:
         connection.execute("DELETE FROM assets")
 
-    for identifier, category in samples:
+    randomized_categories = [
+        category
+        for category in category_names
+        for _ in range(5)
+    ]
+    random.Random(2026).shuffle(randomized_categories)
+
+    category_counts = {category: 0 for category in category_names}
+    for category in randomized_categories:
+        category_counts[category] += 1
+        occurrence = category_counts[category] - 1
+        identifier = (
+            f"WH-{category_prefixes[category]}-{category_counts[category]:03d}"
+        )
         filename = f"sample-{identifier.lower().replace('/', '-')}.jpg"
         source_photo = photo_dir / category_photos[category]
-        asset_number = int(identifier[-3:])
         with Image.open(source_photo).convert("RGB") as base:
             base = base.resize((960, 720))
-            unique_image = ImageEnhance.Brightness(base).enhance(
-                0.82 + ((asset_number % 7) * 0.055)
-            )
-            unique_image = ImageEnhance.Contrast(unique_image).enhance(
-                1.05 + ((asset_number % 5) * 0.07)
-            )
-            unique_image = ImageEnhance.Color(unique_image).enhance(
-                0.82 + ((asset_number % 6) * 0.12)
-            )
-            tint = Image.new("RGB", unique_image.size, category_color_tints[category])
-            unique_image = Image.blend(
-                unique_image,
-                tint,
-                0.035 + ((asset_number % 4) * 0.012),
-            )
+            unique_image = apply_asset_color_variant(base, category, occurrence)
             unique_image.save(upload_folder / filename, "JPEG", quality=88)
         photograph_path = f"uploads/{filename}"
 
