@@ -4,6 +4,8 @@ A complete local-network prototype for registering and viewing warehouse assets.
 
 The interface uses a responsive dark warehouse-control theme inspired by modern operations dashboards: deep navy surfaces, dark burnt-orange accents, compact live metrics, glass-style panels, hover feedback, fixed desktop navigation, and a mobile bottom navigation bar.
 
+The dashboard list intentionally keeps a stable non-hovering table presentation. Interactive hover styling is retained for individual asset-detail surfaces and controls.
+
 ## Technology stack
 
 - React 19 with Vite and standard responsive CSS
@@ -103,6 +105,8 @@ The backend listens on `0.0.0.0:5000`. The database and uploads directories are 
 ```powershell
 python seed.py
 ```
+
+The seed script creates 28 realistic asset records across all supported categories, copies bundled warehouse photographs into the uploads directory, and therefore demonstrates pagination across three pages. Seed photographs are sourced from Unsplash and stored locally for predictable offline use.
 
 ### Frontend
 

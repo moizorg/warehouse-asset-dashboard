@@ -308,7 +308,19 @@ function Dashboard({ onOpen, refreshToken }) {
             </div>
             <div className="pagination">
               <button className="button secondary" disabled={page <= 1} onClick={() => setPage((value) => value - 1)}>Previous</button>
-              <span>Page {data.pagination.page} of {data.pagination.pages}</span>
+              <div className="page-numbers" aria-label="Pagination">
+                {Array.from({ length: data.pagination.pages }, (_, index) => index + 1).map((pageNumber) => (
+                  <button
+                    key={pageNumber}
+                    type="button"
+                    className={pageNumber === data.pagination.page ? "page-number active" : "page-number"}
+                    aria-current={pageNumber === data.pagination.page ? "page" : undefined}
+                    onClick={() => setPage(pageNumber)}
+                  >
+                    {pageNumber}
+                  </button>
+                ))}
+              </div>
               <button className="button secondary" disabled={page >= data.pagination.pages} onClick={() => setPage((value) => value + 1)}>Next</button>
             </div>
           </>

@@ -207,14 +207,6 @@ button, input, select { transition: color .18s ease, background .18s ease, borde
   overflow: hidden;
   transition: transform .2s ease, border-color .2s ease, background .2s ease, box-shadow .2s ease;
 }
-.metric-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(198,93,33,.28);
-  background:
-    linear-gradient(120deg, rgba(198,93,33,.08), transparent 42%),
-    rgba(14,23,37,.96);
-  box-shadow: 0 16px 36px rgba(0,0,0,.22);
-}
 .metric-card::after {
   content: "";
   position: absolute;
@@ -295,14 +287,7 @@ th {
   border-bottom: 1px solid var(--line);
 }
 td { height: 82px; padding: 10px 16px; border-bottom: 1px solid var(--line); color: #dbe3ea; }
-tbody tr { cursor: pointer; transition: background .18s ease, box-shadow .18s ease, transform .18s ease; }
-tbody tr:hover {
-  background: linear-gradient(90deg, rgba(198,93,33,.105), rgba(255,255,255,.018));
-  box-shadow: inset 3px 0 var(--orange-strong);
-  transform: translateX(2px);
-}
-.thumbnail { transition: transform .2s ease, border-color .2s ease, filter .2s ease; }
-tbody tr:hover .thumbnail { transform: scale(1.06); border-color: rgba(198,93,33,.48); filter: saturate(1.08); }
+tbody tr { cursor: pointer; }
 .thumbnail {
   width: 68px;
   height: 52px;
@@ -341,6 +326,21 @@ tbody tr:hover .thumbnail { transform: scale(1.06); border-color: rgba(198,93,33
   min-height: 68px;
   padding: 12px 16px;
   color: var(--muted);
+}
+.page-numbers { display: flex; align-items: center; gap: 5px; }
+.page-number {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255,255,255,.025);
+  color: var(--muted);
+  font-weight: 850;
+}
+.page-number.active {
+  border-color: var(--orange);
+  background: var(--orange);
+  color: white;
 }
 
 .empty-state {
