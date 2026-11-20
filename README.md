@@ -6,7 +6,7 @@ The interface uses a responsive dark warehouse-control theme inspired by modern 
 
 The dashboard list intentionally keeps a stable non-hovering table presentation. Interactive hover styling is retained for individual asset-detail surfaces and controls. 
 
-The dashboard footer includes a responsive category distribution chart that totals Asset IDs by category across the current search/filter result.
+The dashboard footer includes a responsive category distribution chart that totals Asset IDs by category across the current search/filter result. Hovering or clicking a chart segment shows its category, ID count, and percentage.
 
 ## Technology stack
 

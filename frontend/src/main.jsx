@@ -199,6 +199,7 @@ function Dashboard({ onOpen, refreshToken }) {
   const [page, setPage] = useState(1);
   const [data, setData] = useState({ items: [], pagination: { page: 1, pages: 1, total: 0 } });
   const [distribution, setDistribution] = useState([]);
+  const [activeChartSegment, setActiveChartSegment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -289,6 +290,30 @@ function Dashboard({ onOpen, refreshToken }) {
       angle,
     };
   });
+  const activeChartLabel =
+    activeChartSegment === null ? null : chartLabels[activeChartSegment];
+
+  function selectChartSegment(event) {
+    if (!distribution.length) return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - (bounds.left + bounds.width / 2);
+    const y = event.clientY - (bounds.top + bounds.height / 2);
+    const distance = Math.sqrt(x * x + y * y);
+    if (distance < bounds.width * 0.19 || distance > bounds.width * 0.48) {
+      setActiveChartSegment(null);
+      return;
+    }
+    let angle = (Math.atan2(y, x) * 180 / Math.PI + 90 + 360) % 360;
+    let start = 0;
+    for (let index = 0; index < distribution.length; index += 1) {
+      const end = start + (distribution[index].count / distributionTotal) * 360;
+      if (angle >= start && angle <= end) {
+        setActiveChartSegment(index);
+        return;
+      }
+      start = end;
+    }
+  }
 
   return (
     <main className="page-shell">
@@ -425,6 +450,9 @@ function Dashboard({ onOpen, refreshToken }) {
               style={{
                 background: `conic-gradient(${chartSegments.join(", ")})`,
               }}
+              onMouseMove={selectChartSegment}
+              onMouseLeave={() => setActiveChartSegment(null)}
+              onClick={selectChartSegment}
             >
               {chartLabels.map((label) => (
                 <span
@@ -445,6 +473,25 @@ function Dashboard({ onOpen, refreshToken }) {
                 <strong>{distributionTotal}</strong>
                 <small>Total IDs</small>
               </div>
+              {activeChartLabel && (
+                <div
+                  className="category-chart-tooltip"
+                  style={{
+                    left: `${activeChartLabel.left}%`,
+                    top: `${activeChartLabel.top}%`,
+                  }}
+                >
+                  <strong>{categoryChartLabels[activeChartLabel.category] || activeChartLabel.category}</strong>
+                  <span>
+                    {activeChartLabel.count} IDs
+                    <small>
+                      {distributionTotal
+                        ? `${Math.round((activeChartLabel.count / distributionTotal) * 100)}%`
+                        : "0%"}
+                    </small>
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </section>
