@@ -446,25 +446,6 @@ function Dashboard({ onOpen, refreshToken }) {
                 <small>Total IDs</small>
               </div>
             </div>
-            <div className="category-legend">
-              {distribution.map((item, index) => (
-                <div className="legend-row" key={item.category}>
-                  <span
-                    className="legend-dot"
-                    style={{ background: categoryColors[index % categoryColors.length] }}
-                  />
-                  <span className="legend-category">
-                    {categoryChartLabels[item.category] || item.category}
-                  </span>
-                  <strong>{item.count}</strong>
-                  <small>
-                    {distributionTotal
-                      ? `${Math.round((item.count / distributionTotal) * 100)}%`
-                      : "0%"}
-                  </small>
-                </div>
-              ))}
-            </div>
           </div>
         </section>
       )}
