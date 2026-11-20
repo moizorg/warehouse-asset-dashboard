@@ -379,6 +379,7 @@ function App() {
   const [view, setView] = useState("dashboard");
   const [detailId, setDetailId] = useState(null);
   const [refreshToken, setRefreshToken] = useState(0);
+  const [dashboardResetToken, setDashboardResetToken] = useState(0);
 
   function openDetail(id) {
     setDetailId(id);
@@ -390,13 +391,21 @@ function App() {
     openDetail(asset.id);
   }
 
+  function navigate(nextView) {
+    setDetailId(null);
+    if (nextView === "dashboard") {
+      setDashboardResetToken((value) => value + 1);
+    }
+    setView(nextView);
+  }
+
   return (
     <>
-      <Navigation view={view} setView={(next) => { setView(next); setDetailId(null); }} />
-      <button data-add-asset hidden onClick={() => setView("create")} />
-      {view === "dashboard" && <Dashboard onOpen={openDetail} refreshToken={refreshToken} />}
-      {view === "create" && <AssetForm onCreated={createdAsset} onCancel={() => setView("dashboard")} />}
-      {view === "detail" && <AssetDetail id={detailId} onBack={() => setView("dashboard")} />}
+      <Navigation view={view} setView={navigate} />
+      <button data-add-asset hidden onClick={() => navigate("create")} />
+      {view === "dashboard" && <Dashboard key={dashboardResetToken} onOpen={openDetail} refreshToken={refreshToken} />}
+      {view === "create" && <AssetForm onCreated={createdAsset} onCancel={() => navigate("dashboard")} />}
+      {view === "detail" && <AssetDetail id={detailId} onBack={() => navigate("dashboard")} />}
     </>
   );
 }
