@@ -5,21 +5,19 @@ from app import create_app
 
 app = create_app()
 
-photo_dir = Path(__file__).resolve().parent / "seed_assets"
-
-category_photos = {
-    "Machinery": "machinery.jpg",
-    "Tools": "tools.jpg",
-    "Electronics": "electronics.jpg",
-    "Furniture": "furniture.jpg",
-    "Vehicles": "vehicles.jpg",
-    "Safety Equipment": "safety.jpg",
-    "Other": "warehouse.jpg",
-}
+photo_dir = Path(__file__).resolve().parent / "seed_assets_unique"
 
 samples = []
-category_names = list(category_photos)
-for index in range(1, 29):
+category_names = [
+    "Machinery",
+    "Tools",
+    "Electronics",
+    "Furniture",
+    "Vehicles",
+    "Safety Equipment",
+    "Other",
+]
+for index in range(1, 32):
     category = category_names[(index - 1) % len(category_names)]
     prefix = {
         "Machinery": "MCH",
@@ -37,9 +35,12 @@ with app.app_context():
     upload_folder = Path(app.config["UPLOAD_FOLDER"]).resolve()
     upload_folder.mkdir(parents=True, exist_ok=True)
 
+    with database.connect() as connection:
+        connection.execute("DELETE FROM assets")
+
     for identifier, category in samples:
         filename = f"sample-{identifier.lower().replace('/', '-')}.jpg"
-        source_photo = photo_dir / category_photos[category]
+        source_photo = photo_dir / f"photo-{index:03d}.jpg"
         shutil.copyfile(source_photo, upload_folder / filename)
         photograph_path = f"uploads/{filename}"
 
