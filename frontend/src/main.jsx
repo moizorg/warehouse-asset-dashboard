@@ -288,7 +288,7 @@ function Dashboard({ onOpen, refreshToken }) {
                 </thead>
                 <tbody>
                   {data.items.map((asset) => (
-                    <tr key={asset.id} onClick={() => onOpen(asset.id)}>
+                    <tr key={asset.id}>
                       <td data-label="Photograph">
                         <img
                           className="thumbnail"
@@ -299,7 +299,16 @@ function Dashboard({ onOpen, refreshToken }) {
                       <td data-label="Asset ID"><strong>{asset.asset_identifier}</strong></td>
                       <td data-label="Category"><span className="category-pill">{asset.category}</span></td>
                       <td data-label="Created">{formatDate(asset.created_at)}</td>
-                      <td><button className="row-button" onClick={(event) => { event.stopPropagation(); onOpen(asset.id); }}>View →</button></td>
+                      <td>
+                        <button
+                          type="button"
+                          className="row-button"
+                          aria-label={`View details for asset ${asset.asset_identifier}`}
+                          onClick={() => onOpen(asset.id)}
+                        >
+                          View →
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
