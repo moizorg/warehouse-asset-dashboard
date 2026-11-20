@@ -2,7 +2,7 @@
 
 A complete local-network prototype for registering and viewing warehouse assets. It uses a React frontend, Flask REST API, and SQLite, with photograph files stored outside the database.
 
-The interface uses a responsive dark warehouse-control theme inspired by modern operations dashboards: deep navy surfaces, warm gold accents, compact live metrics, glass-style panels, fixed desktop navigation, and a mobile bottom navigation bar.
+The interface uses a responsive dark warehouse-control theme inspired by modern operations dashboards: deep navy surfaces, dark burnt-orange accents, compact live metrics, glass-style panels, hover feedback, fixed desktop navigation, and a mobile bottom navigation bar.
 
 ## Technology stack
 
