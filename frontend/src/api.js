@@ -3,7 +3,11 @@ const configuredBaseUrl =
   (import.meta.env.PROD ? "" : `${window.location.protocol}//${window.location.hostname}:5000`);
 
 export function apiUrl(path) {
-  return `${configuredBaseUrl.replace(/\/$/, "")}${path}`;
+  const base = configuredBaseUrl.replace(/\/$/, "");
+  if (base.endsWith("/api") && path.startsWith("/api/")) {
+    return `${base}${path.slice("/api".length)}`;
+  }
+  return `${base}${path}`;
 }
 
 export async function fetchAssets({ search = "", page = 1, limit = 10 } = {}) {
