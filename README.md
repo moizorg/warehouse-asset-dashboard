@@ -125,9 +125,9 @@ Open `http://localhost:5173`.
 
 ### Vercel deployment
 
-Production deployment:
+**Live production deployment:** [https://warehouse-asset-dashboard.vercel.app](https://warehouse-asset-dashboard.vercel.app)
 
-- https://warehouse-asset-dashboard.vercel.app
+The production dashboard is deployed on Vercel and serves the React frontend with the Flask REST API from the same origin. The deployment exposes the seeded asset dashboard, search and pagination, photograph endpoints, asset details, and category distribution chart.
 
 The repository includes a Vercel configuration for a single-origin deployment:
 
