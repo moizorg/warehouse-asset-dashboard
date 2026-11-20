@@ -258,6 +258,14 @@ function Dashboard({ onOpen, refreshToken }) {
     "#77a98f",
     "#d4b84e",
   ];
+  const categoryChartLabels = {
+    Machinery: "Machinery",
+    Tools: "Tools",
+    Electronics: "Electronics",
+    Furniture: "Furniture",
+    Vehicles: "Vehicles",
+    "Safety Equipment": "Safety Equipment",
+  };
   const distributionTotal = distribution.reduce((total, item) => total + item.count, 0);
   let chartOffset = 0;
   const chartSegments = distribution.map((item, index) => {
@@ -387,7 +395,7 @@ function Dashboard({ onOpen, refreshToken }) {
           <div className="distribution-heading">
             <div>
               <p className="eyebrow">Inventory analysis</p>
-              <h2>Asset categories</h2>
+              <h2>Asset category distribution</h2>
             </div>
             <span>{distributionTotal} assets</span>
           </div>
@@ -395,7 +403,9 @@ function Dashboard({ onOpen, refreshToken }) {
             <div
               className="category-chart"
               role="img"
-              aria-label={`Category distribution for ${distributionTotal} assets`}
+              aria-label={`Category distribution for ${distributionTotal} assets: ${distribution
+                .map((item) => `${categoryChartLabels[item.category] || item.category} ${item.count}`)
+                .join(", ")}`}
               style={{
                 background: `conic-gradient(${chartSegments.join(", ")})`,
               }}
@@ -412,7 +422,9 @@ function Dashboard({ onOpen, refreshToken }) {
                     className="legend-dot"
                     style={{ background: categoryColors[index % categoryColors.length] }}
                   />
-                  <span className="legend-category">{item.category}</span>
+                  <span className="legend-category">
+                    {categoryChartLabels[item.category] || item.category}
+                  </span>
                   <strong>{item.count}</strong>
                   <small>
                     {distributionTotal
