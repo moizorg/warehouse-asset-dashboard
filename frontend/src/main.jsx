@@ -28,16 +28,22 @@ function Navigation({ view, setView }) {
     <header className="topbar">
       <button className="brand" onClick={() => setView("dashboard")} aria-label="Open dashboard">
         <span className="brand-mark"><Icon name="warehouse" /></span>
-        <span>Warehouse <strong>Assets</strong></span>
+        <span><small>WAREHOUSE</small> <strong>ASSET CONTROL</strong></span>
       </button>
-      <nav aria-label="Primary navigation">
-        <button className={view === "dashboard" ? "nav-link active" : "nav-link"} onClick={() => setView("dashboard")}>
-          <Icon name="grid" /> Dashboard
+      <div className="topbar-right">
+        <nav aria-label="Primary navigation">
+          <button className={view === "dashboard" ? "nav-link active" : "nav-link"} onClick={() => setView("dashboard")}>
+            <Icon name="grid" /> Dashboard
+          </button>
+          <button className={view === "create" ? "nav-link active" : "nav-link"} onClick={() => setView("create")}>
+            <Icon name="plus" /> Add asset
+          </button>
+        </nav>
+        <button className="operator" type="button" aria-label="Operator profile">
+          <span className="operator-copy"><small>Warehouse team</small><strong>Operator</strong></span>
+          <span className="operator-avatar">WA</span>
         </button>
-        <button className={view === "create" ? "nav-link active" : "nav-link"} onClick={() => setView("create")}>
-          <Icon name="plus" /> Add asset
-        </button>
-      </nav>
+      </div>
     </header>
   );
 }
@@ -217,13 +223,31 @@ function Dashboard({ onOpen, refreshToken }) {
     <main className="page-shell">
       <div className="page-heading">
         <div>
-          <p className="eyebrow">Asset registry</p>
-          <h1>Dashboard</h1>
+          <p className="eyebrow"><span className="live-dot" /> Live inventory</p>
+          <h1>Asset Dashboard</h1>
         </div>
         <button className="button primary" onClick={() => document.querySelector('[data-add-asset]')?.click()}>
-          + Add asset
+          <span aria-hidden="true">+</span> Add asset
         </button>
       </div>
+
+      <section className="metric-grid" aria-label="Inventory summary">
+        <article className="metric-card">
+          <div className="metric-icon">▦</div>
+          <div><small>Total assets</small><strong>{data.pagination.total}</strong></div>
+          <span className="trend">Live</span>
+        </article>
+        <article className="metric-card">
+          <div className="metric-icon warm">◆</div>
+          <div><small>Categories</small><strong>{new Set(data.items.map((asset) => asset.category)).size}</strong></div>
+          <span className="trend">Active</span>
+        </article>
+        <article className="metric-card">
+          <div className="metric-icon blue">◉</div>
+          <div><small>Latest page</small><strong>{data.pagination.page}<em> / {data.pagination.pages}</em></strong></div>
+          <span className="trend">Synced</span>
+        </article>
+      </section>
 
       <section className="card dashboard-card" aria-label="Asset records">
         <div className="toolbar">

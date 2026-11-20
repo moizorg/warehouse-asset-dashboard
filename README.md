@@ -2,6 +2,8 @@
 
 A complete local-network prototype for registering and viewing warehouse assets. It uses a React frontend, Flask REST API, and SQLite, with photograph files stored outside the database.
 
+The interface uses a responsive dark warehouse-control theme inspired by modern operations dashboards: deep navy surfaces, warm gold accents, compact live metrics, glass-style panels, fixed desktop navigation, and a mobile bottom navigation bar.
+
 ## Technology stack
 
 - React 19 with Vite and standard responsive CSS
@@ -196,6 +198,8 @@ Screenshots will be placed in [`docs/screenshots/`](docs/screenshots/):
 - `image-preview.png`
 - `asset-detail.png`
 - `empty-search.png`
+
+The screenshots demonstrate the dark, responsive operations-dashboard interface, including inventory metrics, photograph thumbnails, image preview, individual asset details, and empty search results.
 
 ## Known limitations
 
