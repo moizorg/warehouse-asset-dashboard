@@ -106,7 +106,7 @@ The backend listens on `0.0.0.0:5000`. The database and uploads directories are 
 python seed.py
 ```
 
-The seed script replaces demo asset records with 30 assets across the six named categories. Each asset keeps the original photograph dimensions and composition; repeated category assets receive unique brightness, contrast, saturation, and subtle category-tint treatments for visibly distinct results. Seed photographs are stored locally for predictable offline use.
+The seed script replaces demo asset records with 30 assets across the six named categories. Each asset keeps the original photograph dimensions and composition; repeated Furniture, Machinery, Vehicles, Tools, Electronics, and Safety Equipment photographs receive different hue, saturation, brightness, and category-color treatments. This makes repeated cars, furniture, hammers, laptops, machines, and PPE visually distinct by Asset ID while preserving the same source object and layout.
 
 ### Frontend
 
