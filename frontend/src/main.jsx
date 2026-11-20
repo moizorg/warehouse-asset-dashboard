@@ -273,6 +273,22 @@ function Dashboard({ onOpen, refreshToken }) {
     chartOffset += distributionTotal ? (item.count / distributionTotal) * 100 : 0;
     return `${categoryColors[index % categoryColors.length]} ${start}% ${chartOffset}%`;
   });
+  let labelOffset = 0;
+  const chartLabels = distribution.map((item) => {
+    const segmentStart = labelOffset;
+    const segmentSize = distributionTotal ? (item.count / distributionTotal) * 100 : 0;
+    labelOffset += segmentSize;
+    const angle = (segmentStart + segmentSize / 2) * 3.6;
+    const radius = 82;
+    const radians = ((angle - 90) * Math.PI) / 180;
+    return {
+      category: item.category,
+      count: item.count,
+      left: 50 + Math.cos(radians) * (radius / 220) * 100,
+      top: 50 + Math.sin(radians) * (radius / 220) * 100,
+      angle,
+    };
+  });
 
   return (
     <main className="page-shell">
@@ -410,6 +426,21 @@ function Dashboard({ onOpen, refreshToken }) {
                 background: `conic-gradient(${chartSegments.join(", ")})`,
               }}
             >
+              {chartLabels.map((label) => (
+                <span
+                  key={label.category}
+                  className="category-chart-label"
+                  style={{
+                    left: `${label.left}%`,
+                    top: `${label.top}%`,
+                  }}
+                  title={`${categoryChartLabels[label.category] || label.category}: ${label.count} IDs`}
+                  aria-hidden="true"
+                >
+                  <strong>{categoryChartLabels[label.category] || label.category}</strong>
+                  <small>{label.count}</small>
+                </span>
+              ))}
               <div className="category-chart-center">
                 <strong>{distributionTotal}</strong>
                 <small>Total IDs</small>

@@ -373,11 +373,39 @@ tbody tr { cursor: default; }
   width: 220px;
   aspect-ratio: 1;
   border-radius: 50%;
+  position: relative;
   display: grid;
   place-items: center;
+  isolation: isolate;
   box-shadow:
     0 20px 50px rgba(0,0,0,.32),
     0 0 24px rgba(234,88,12,.08);
+}
+.category-chart-label {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  min-width: 78px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 2px 5px rgba(0,0,0,.95);
+  pointer-events: none;
+  line-height: 1.05;
+}
+.category-chart-label strong {
+  max-width: 88px;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .35px;
+}
+.category-chart-label small {
+  margin-top: 3px;
+  font-size: 13px;
+  font-weight: 900;
 }
 .category-chart-center {
   width: 126px;
