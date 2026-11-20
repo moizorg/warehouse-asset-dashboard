@@ -123,6 +123,10 @@ Open `http://localhost:5173`.
 
 ### Vercel deployment
 
+Production deployment:
+
+- https://warehouse-asset-dashboard.vercel.app
+
 The repository includes a Vercel configuration for a single-origin deployment:
 
 ```powershell
