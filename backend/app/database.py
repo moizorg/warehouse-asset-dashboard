@@ -41,13 +41,3 @@ class Database:
             connection.execute(
                 "CREATE INDEX IF NOT EXISTS idx_assets_category ON assets(category)"
             )
-            connection.execute(
-                """
-                CREATE TABLE IF NOT EXISTS preset_usage (
-                    category TEXT NOT NULL,
-                    filename TEXT NOT NULL,
-                    used_at TEXT NOT NULL,
-                    PRIMARY KEY (category, filename)
-                )
-                """
-            )
