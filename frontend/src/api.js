@@ -1,6 +1,6 @@
 const configuredBaseUrl =
   import.meta.env.VITE_API_BASE_URL ||
-  `${window.location.protocol}//${window.location.hostname}:5000`;
+  (import.meta.env.PROD ? "" : `${window.location.protocol}//${window.location.hostname}:5000`);
 
 export function apiUrl(path) {
   return `${configuredBaseUrl.replace(/\/$/, "")}${path}`;

@@ -106,7 +106,7 @@ The backend listens on `0.0.0.0:5000`. The database and uploads directories are 
 python seed.py
 ```
 
-The seed script replaces demo asset records with 30 assets across the six named categories. Each asset receives a unique category-matched photograph variant, and the data demonstrates pagination across three pages. Seed photographs are stored locally for predictable offline use.
+The seed script replaces demo asset records with 30 assets across the six named categories. Each asset keeps the original photograph dimensions and composition; repeated category assets receive unique brightness, contrast, saturation, and subtle category-tint treatments for visibly distinct results. Seed photographs are stored locally for predictable offline use.
 
 ### Frontend
 
@@ -120,6 +120,20 @@ npm run dev
 ```
 
 Open `http://localhost:5173`.
+
+### Vercel deployment
+
+The repository includes a Vercel configuration for a single-origin deployment:
+
+```powershell
+vercel login
+vercel
+vercel --prod
+```
+
+Set `VITE_API_BASE_URL=/api` in Vercel's project environment variables. The Python API is exposed through `/api/index`, and Vite serves the React application from the same deployment.
+
+For Vercel, SQLite and uploads use ephemeral `/tmp` storage. Data and photographs can change when serverless instances restart or scale. Use an external SQLite-compatible persistent volume or object storage before production use.
 
 ### Docker
 
