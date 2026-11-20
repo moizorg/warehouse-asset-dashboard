@@ -21,9 +21,14 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: hidden;
   background:
-    radial-gradient(circle at 78% 8%, rgba(198, 93, 33, 0.10), transparent 24rem),
-    radial-gradient(circle at 18% 72%, rgba(198, 93, 33, 0.035), transparent 30rem),
+    radial-gradient(circle at 96% 4%, rgba(234, 88, 12, 0.12), transparent 17rem),
+    radial-gradient(circle at 4% 4%, rgba(217, 90, 28, 0.10), transparent 18rem),
+    radial-gradient(circle at 4% 96%, rgba(234, 88, 12, 0.12), transparent 20rem),
+    radial-gradient(circle at 96% 96%, rgba(217, 90, 28, 0.11), transparent 18rem),
+    radial-gradient(circle at 0% 50%, rgba(234, 88, 12, 0.065), transparent 17rem),
+    radial-gradient(circle at 100% 50%, rgba(217, 90, 28, 0.065), transparent 17rem),
     linear-gradient(135deg, #000000 0%, #080808 55%, #000000 100%);
 }
 body::before {
@@ -31,11 +36,28 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
+  z-index: 0;
   opacity: .16;
   background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
   background-size: 48px 48px;
   mask-image: linear-gradient(to bottom, black, transparent 85%);
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+  filter: blur(10px);
+  background:
+    radial-gradient(circle at 96% 4%, rgba(234, 88, 12, 0.12), transparent 16rem),
+    radial-gradient(circle at 4% 4%, rgba(217, 90, 28, 0.10), transparent 15rem),
+    radial-gradient(circle at 4% 96%, rgba(234, 88, 12, 0.12), transparent 18rem),
+    radial-gradient(circle at 96% 96%, rgba(217, 90, 28, 0.11), transparent 17rem),
+    radial-gradient(circle at 0% 50%, rgba(234, 88, 12, 0.07), transparent 15rem),
+    radial-gradient(circle at 100% 50%, rgba(217, 90, 28, 0.07), transparent 15rem);
 }
 button, input, select { font: inherit; }
 button { cursor: pointer; }
@@ -431,6 +453,19 @@ tbody tr { cursor: default; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
 @media (max-width: 760px) {
+  body {
+    background:
+      radial-gradient(circle at 94% 3%, rgba(234, 88, 12, 0.12), transparent 11rem),
+      radial-gradient(circle at 6% 3%, rgba(217, 90, 28, 0.09), transparent 11rem),
+      radial-gradient(circle at 6% 97%, rgba(234, 88, 12, 0.11), transparent 13rem),
+      radial-gradient(circle at 94% 97%, rgba(217, 90, 28, 0.10), transparent 12rem),
+      radial-gradient(circle at 0% 50%, rgba(234, 88, 12, 0.055), transparent 10rem),
+      radial-gradient(circle at 100% 50%, rgba(217, 90, 28, 0.055), transparent 10rem),
+      linear-gradient(135deg, #000000 0%, #080808 55%, #000000 100%);
+  }
+  body::after {
+    filter: blur(8px);
+  }
   .topbar { height: 66px; padding: 7px 12px; }
   .brand strong { font-size: 12px; }
   .brand-mark { width: 36px; height: 36px; }
