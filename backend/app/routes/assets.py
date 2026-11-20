@@ -1,10 +1,8 @@
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from sqlite3 import IntegrityError
-from pathlib import Path
 from ..models import Asset
 from ..services import (
     save_image,
-    allocate_preset,
     validate_asset_identifier,
     validate_category,
     ValidationError,
@@ -47,18 +45,10 @@ def create_asset():
         return jsonify(error="An asset with this Asset ID already exists."), 409
 
     try:
-        uploaded = request.files.get("photograph")
-        if uploaded and uploaded.filename:
-            photograph_path = save_image(
-                uploaded,
-                current_app.config["UPLOAD_FOLDER"],
-            )
-        else:
-            photograph_path = allocate_preset(
-                category,
-                current_app.config["UPLOAD_FOLDER"],
-                database,
-            )
+        photograph_path = save_image(
+            request.files.get("photograph"),
+            current_app.config["UPLOAD_FOLDER"],
+        )
     except ValidationError as error:
         return jsonify(error=str(error)), error.status
 
@@ -158,16 +148,9 @@ def get_photograph(asset_id):
     if not row:
         return jsonify(error="Asset not found."), 404
 
-    relative_path = row["photograph_path"].replace("\\", "/")
-    upload_root = Path(current_app.config["UPLOAD_FOLDER"]).resolve()
-    requested_path = (upload_root / relative_path.removeprefix("uploads/")).resolve()
-    if upload_root not in requested_path.parents:
-        return jsonify(error="Invalid photograph path."), 404
-    relative_name = requested_path.relative_to(upload_root).as_posix()
-    directory = upload_root / relative_name.rsplit("/", 1)[0]
-    filename = requested_path.name
+    filename = row["photograph_path"].replace("\\", "/").rsplit("/", 1)[-1]
     return send_from_directory(
-        str(directory),
+        current_app.config["UPLOAD_FOLDER"],
         filename,
         as_attachment=False,
         max_age=0,

@@ -10,7 +10,6 @@ const CATEGORIES = [
   "Furniture",
   "Vehicles",
   "Safety Equipment",
-  "Other",
 ];
 
 function Icon({ name }) {
@@ -104,10 +103,15 @@ function AssetForm({ onCreated, onCancel }) {
       setStatus({ message: "Asset category is required.", type: "error" });
       return;
     }
+    if (!photograph) {
+      setStatus({ message: "An asset photograph is required.", type: "error" });
+      return;
+    }
+
     const formData = new FormData();
     formData.set("asset_identifier", trimmed);
     formData.set("category", category);
-    if (photograph) formData.set("photograph", photograph);
+    formData.set("photograph", photograph);
     setSubmitting(true);
     try {
       const created = await createAsset(formData);
@@ -152,13 +156,14 @@ function AssetForm({ onCreated, onCancel }) {
           </div>
         </div>
         <div className="field">
-          <label htmlFor="photograph">Asset Photograph <small>Optional preset image</small></label>
+          <label htmlFor="photograph">Asset Photograph <span aria-hidden="true">*</span></label>
           <input
             className="file-input"
             id="photograph"
             type="file"
             accept=".png,.jpg,.jpeg,image/png,image/jpeg"
             onChange={handleFile}
+            required
           />
           <small>PNG, JPG, or JPEG. Maximum size 5 MB.</small>
         </div>
