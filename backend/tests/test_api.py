@@ -11,11 +11,30 @@ from app import create_app
 @pytest.fixture()
 def environment():
     directory = tempfile.TemporaryDirectory()
+    upload_folder = os.path.join(directory.name, "uploads")
+    categories = [
+        "electronics",
+        "tools",
+        "machinery",
+        "other",
+        "safety-equipment",
+        "vehicles",
+        "furniture",
+    ]
+    for category in categories:
+        preset_folder = os.path.join(upload_folder, "presets", category)
+        os.makedirs(preset_folder, exist_ok=True)
+        for variant in range(1, 6):
+            with Image.new("RGB", (40, 30), "gray") as image:
+                image.save(
+                    os.path.join(preset_folder, f"{category}-{variant:02d}.jpg"),
+                    "JPEG",
+                )
     app = create_app(
         {
             "TESTING": True,
             "DATABASE": os.path.join(directory.name, "test.db"),
-            "UPLOAD_FOLDER": os.path.join(directory.name, "uploads"),
+            "UPLOAD_FOLDER": upload_folder,
             "ALLOWED_ORIGINS": ["http://localhost:5173"],
             "MAX_CONTENT_LENGTH": 5 * 1024 * 1024,
         }
@@ -61,6 +80,32 @@ def test_create_asset(client):
     assert body["category"] == "Tools"
     assert body["created_at"]
     assert body["photograph_url"].endswith("/photograph")
+
+
+def test_create_asset_without_upload_uses_category_preset(client):
+    response = client.post(
+        "/api/assets",
+        data={"asset_identifier": "WH-MCH-PRESET", "category": "Machinery"},
+        content_type="multipart/form-data",
+    )
+    assert response.status_code == 201
+    body = response.get_json()
+    assert "/presets/machinery/" in body["photograph_path"]
+    photograph = client.get(body["photograph_url"])
+    assert photograph.status_code == 200
+
+
+def test_repeated_category_presets_use_distinct_images(client):
+    paths = []
+    for index in range(1, 4):
+        response = client.post(
+            "/api/assets",
+            data={"asset_identifier": f"WH-FRN-{index}", "category": "Furniture"},
+            content_type="multipart/form-data",
+        )
+        assert response.status_code == 201
+        paths.append(response.get_json()["photograph_path"])
+    assert len(set(paths)) == 3
 
 
 def test_duplicate_asset_id_returns_conflict(client):

@@ -1,91 +1,103 @@
 from pathlib import Path
 from PIL import Image, ImageEnhance
+
 from app import create_app
 
 
 app = create_app()
 
-photo_dir = Path(__file__).resolve().parent / "seed_assets"
-
-samples = []
-category_names = [
-    "Machinery",
-    "Tools",
-    "Electronics",
-    "Furniture",
-    "Vehicles",
-    "Safety Equipment",
-]
-category_photos = {
-    "Machinery": "machinery.jpg",
-    "Tools": "tools.jpg",
+category_sources = {
     "Electronics": "electronics.jpg",
-    "Furniture": "furniture.jpg",
-    "Vehicles": "vehicles.jpg",
+    "Tools": "tools.jpg",
+    "Machinery": "machinery.jpg",
+    "Other": "warehouse.jpg",
     "Safety Equipment": "safety.jpg",
+    "Vehicles": "vehicles.jpg",
+    "Furniture": "furniture.jpg",
 }
-for index in range(1, 31):
-    category = category_names[(index - 1) % len(category_names)]
-    prefix = {
-        "Machinery": "MCH",
-        "Tools": "TLS",
-        "Electronics": "ELC",
-        "Furniture": "FRN",
-        "Vehicles": "VHC",
-        "Safety Equipment": "SFT",
-    }[category]
-    samples.append((f"WH-{prefix}-{index:03d}", category))
+
+category_prefixes = {
+    "Electronics": "ELC",
+    "Tools": "TLS",
+    "Machinery": "MCH",
+    "Other": "OTH",
+    "Safety Equipment": "SFT",
+    "Vehicles": "VHC",
+    "Furniture": "FRN",
+}
+
+
+def create_preset_pools(upload_folder):
+    source_folder = Path(__file__).resolve().parent / "seed_assets"
+    presets_root = Path(upload_folder).resolve() / "presets"
+    presets_root.mkdir(parents=True, exist_ok=True)
+
+    for category, source_name in category_sources.items():
+        category_folder = presets_root / category.lower().replace(" ", "-")
+        category_folder.mkdir(parents=True, exist_ok=True)
+        for old_file in category_folder.glob("*.jpg"):
+            old_file.unlink()
+
+        with Image.open(source_folder / source_name).convert("RGB") as source:
+            source = source.resize((1200, 900), Image.Resampling.LANCZOS)
+            for variant in range(1, 6):
+                left = (variant - 1) * 32
+                top = (variant - 1) * 18
+                right = 1200 - ((5 - variant) * 32)
+                bottom = 900 - ((5 - variant) * 18)
+                image = source.crop((left, top, right, bottom)).resize(
+                    (960, 720),
+                    Image.Resampling.LANCZOS,
+                )
+                image = ImageEnhance.Contrast(image).enhance(
+                    0.96 + variant * 0.025
+                )
+                image.save(
+                    category_folder / f"{category.lower().replace(' ', '-')}-{variant:02d}.jpg",
+                    "JPEG",
+                    quality=90,
+                )
+
 
 with app.app_context():
     database = app.extensions["database"]
     upload_folder = Path(app.config["UPLOAD_FOLDER"]).resolve()
     upload_folder.mkdir(parents=True, exist_ok=True)
 
+    create_preset_pools(upload_folder)
+
     for old_photo in upload_folder.glob("sample-*.jpg"):
         old_photo.unlink()
 
     with database.connect() as connection:
         connection.execute("DELETE FROM assets")
+        connection.execute("DELETE FROM preset_usage")
 
-    for identifier, category in samples:
-        filename = f"sample-{identifier.lower().replace('/', '-')}.jpg"
-        source_photo = photo_dir / category_photos[category]
-        with Image.open(source_photo).convert("RGB") as base:
-            base = base.resize((960, 720))
-            crop_width = 860 + ((int(identifier[-3:]) % 5) * 12)
-            crop_height = 620 + ((int(identifier[-3:]) % 4) * 12)
-            left = max(0, (base.width - crop_width) // 2)
-            top = max(0, (base.height - crop_height) // 2)
-            unique_image = base.crop((left, top, left + crop_width, top + crop_height))
-            unique_image = unique_image.resize((960, 720), Image.Resampling.LANCZOS)
-            unique_image = ImageEnhance.Brightness(unique_image).enhance(
-                0.92 + ((int(identifier[-3:]) % 7) * 0.018)
-            )
-            unique_image = ImageEnhance.Contrast(unique_image).enhance(
-                1.02 + ((int(identifier[-3:]) % 5) * 0.025)
-            )
-            unique_image.save(upload_folder / filename, "JPEG", quality=88)
-        photograph_path = f"uploads/{filename}"
+    categories = list(category_sources)
+    number = 1
+    for category in categories:
+        prefix = category_prefixes[category]
+        for position in range(1, 6):
+            identifier = f"WH-{prefix}-{number:03d}"
+            category_folder = category.lower().replace(" ", "-")
+            preset_name = f"{category_folder}-{position:02d}.jpg"
+            photograph_path = f"uploads/presets/{category_folder}/{preset_name}"
 
-        with database.connect() as connection:
-            existing = connection.execute(
-                "SELECT id FROM assets WHERE asset_identifier = ?", (identifier,)
-            ).fetchone()
-        if existing:
             with database.connect() as connection:
                 connection.execute(
-                    "UPDATE assets SET photograph_path = ?, category = ? WHERE id = ?",
-                    (photograph_path, category, existing["id"]),
+                    """
+                    INSERT INTO preset_usage (category, filename, used_at)
+                    VALUES (?, ?, datetime('now'))
+                    """,
+                    (category, preset_name),
                 )
-            continue
+                connection.execute(
+                    """
+                    INSERT INTO assets (asset_identifier, category, photograph_path, created_at)
+                    VALUES (?, ?, ?, datetime('now'))
+                    """,
+                    (identifier, category, photograph_path),
+                )
+            number += 1
 
-        with database.connect() as connection:
-            connection.execute(
-                """
-                INSERT INTO assets (asset_identifier, category, photograph_path, created_at)
-                VALUES (?, ?, ?, datetime('now'))
-                """,
-                (identifier, category, photograph_path),
-            )
-
-print("Seed data initialized.")
+print("Seed data initialized with 35 category-matched preset assets.")
