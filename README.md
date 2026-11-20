@@ -106,7 +106,7 @@ The backend listens on `0.0.0.0:5000`. The database and uploads directories are 
 python seed.py
 ```
 
-The seed script replaces demo asset records with 30 assets across the six named categories. Each asset receives a unique category-matched photograph variant, and the data demonstrates pagination across three pages. Seed photographs are stored locally for predictable offline use.
+The seed script creates 35 preset assets across the seven exact categories: Electronics, Tools, Machinery, Other, Safety Equipment, Vehicles, and Furniture. Each category has five distinct local photographs in `backend/uploads/presets/<category>/`. Repeated preset entries use an unused image from the category pool; manual uploads remain supported and are stored separately.
 
 ### Frontend
 
