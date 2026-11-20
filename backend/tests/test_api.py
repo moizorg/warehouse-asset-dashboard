@@ -92,6 +92,22 @@ def test_fetch_individual_asset(client):
     assert response.get_json()["asset_identifier"] == "WH-TEST-001"
 
 
+def test_same_category_seed_assets_have_distinct_photographs(client):
+    first = client.post(
+        "/api/assets",
+        data=create_payload("WH-FRN-022", "Furniture", "furniture-022.png"),
+        content_type="multipart/form-data",
+    )
+    second = client.post(
+        "/api/assets",
+        data=create_payload("WH-FRN-028", "Furniture", "furniture-028.png"),
+        content_type="multipart/form-data",
+    )
+    assert first.status_code == 201
+    assert second.status_code == 201
+    assert first.get_json()["photograph_path"] != second.get_json()["photograph_path"]
+
+
 def test_reject_invalid_image_type(client):
     payload = {
         "asset_identifier": "BAD-TYPE",
