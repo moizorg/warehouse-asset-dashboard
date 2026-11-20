@@ -45,39 +45,6 @@ category_color_tints = {
     "Safety Equipment": (224, 178, 52),
 }
 
-category_hue_shifts = {
-    "Machinery": (10, 55, 115, 175, 235),
-    "Tools": (0, 35, 85, 145, 205),
-    "Electronics": (0, 50, 105, 165, 220),
-    "Furniture": (0, 40, 95, 155, 210),
-    "Vehicles": (0, 30, 80, 140, 200),
-    "Safety Equipment": (0, 25, 70, 125, 185),
-}
-
-
-def apply_asset_color_variant(image, category, asset_number):
-    occurrence = ((asset_number - 1) // 6) % 5
-    hue_degrees = category_hue_shifts[category][occurrence]
-    hue_shift = round(hue_degrees * 255 / 360)
-
-    hsv = image.convert("HSV")
-    hue, saturation, value = hsv.split()
-    hue = hue.point(lambda channel: (channel + hue_shift) % 256)
-    saturation = saturation.point(
-        lambda channel: max(0, min(255, int(channel * (1.12 + occurrence * 0.08))))
-    )
-    value = value.point(
-        lambda channel: max(0, min(255, int(channel * (0.94 + occurrence * 0.025))))
-    )
-    variant = Image.merge("HSV", (hue, saturation, value)).convert("RGB")
-
-    tint = Image.new("RGB", variant.size, category_color_tints[category])
-    return Image.blend(
-        variant,
-        tint,
-        0.055 + occurrence * 0.018,
-    )
-
 with app.app_context():
     database = app.extensions["database"]
     upload_folder = Path(app.config["UPLOAD_FOLDER"]).resolve()
@@ -95,7 +62,21 @@ with app.app_context():
         asset_number = int(identifier[-3:])
         with Image.open(source_photo).convert("RGB") as base:
             base = base.resize((960, 720))
-            unique_image = apply_asset_color_variant(base, category, asset_number)
+            unique_image = ImageEnhance.Brightness(base).enhance(
+                0.82 + ((asset_number % 7) * 0.055)
+            )
+            unique_image = ImageEnhance.Contrast(unique_image).enhance(
+                1.05 + ((asset_number % 5) * 0.07)
+            )
+            unique_image = ImageEnhance.Color(unique_image).enhance(
+                0.82 + ((asset_number % 6) * 0.12)
+            )
+            tint = Image.new("RGB", unique_image.size, category_color_tints[category])
+            unique_image = Image.blend(
+                unique_image,
+                tint,
+                0.035 + ((asset_number % 4) * 0.012),
+            )
             unique_image.save(upload_folder / filename, "JPEG", quality=88)
         photograph_path = f"uploads/{filename}"
 
