@@ -13,7 +13,6 @@ CATEGORIES = {
     "Furniture",
     "Vehicles",
     "Safety Equipment",
-    "Other",
 }
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 MAX_IMAGE_BYTES = 5 * 1024 * 1024
@@ -77,50 +76,3 @@ def save_image(file, upload_folder):
     destination = Path(upload_folder).resolve() / generated_name
     file.save(destination)
     return f"uploads/{generated_name}"
-
-
-def allocate_preset(category, upload_folder, database):
-    category_folder_name = category.lower().replace(" ", "-")
-    preset_folder = Path(upload_folder).resolve() / "presets" / category_folder_name
-    candidates = sorted(preset_folder.glob("*.jpg"))
-    if not candidates:
-        raise ValidationError(f"No preset photographs are available for {category}.")
-
-    with database.connect() as connection:
-        used = {
-            row["filename"]
-            for row in connection.execute(
-                "SELECT filename FROM preset_usage WHERE category = ?",
-                (category,),
-            ).fetchall()
-        }
-
-    available = [candidate for candidate in candidates if candidate.name not in used]
-    selected = available[0] if available else candidates[0]
-    if not available:
-        with database.connect() as connection:
-            oldest = connection.execute(
-                """
-                SELECT filename FROM preset_usage
-                WHERE category = ?
-                ORDER BY used_at ASC
-                LIMIT 1
-                """,
-                (category,),
-            ).fetchone()
-        if oldest:
-            oldest_path = preset_folder / oldest["filename"]
-            if oldest_path.exists():
-                selected = oldest_path
-
-    with database.connect() as connection:
-        connection.execute(
-            """
-            INSERT INTO preset_usage (category, filename, used_at)
-            VALUES (?, ?, datetime('now'))
-            ON CONFLICT(category, filename) DO UPDATE SET used_at = datetime('now')
-            """,
-            (category, selected.name),
-        )
-
-    return f"uploads/presets/{category_folder_name}/{selected.name}"
