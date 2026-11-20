@@ -17,3 +17,5 @@ backend/uploads/
 *.db
 coverage/
 *.log
+.vercel
+.env*
