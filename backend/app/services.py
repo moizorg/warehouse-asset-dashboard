@@ -13,7 +13,6 @@ CATEGORIES = {
     "Furniture",
     "Vehicles",
     "Safety Equipment",
-    "Other",
 }
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 MAX_IMAGE_BYTES = 5 * 1024 * 1024

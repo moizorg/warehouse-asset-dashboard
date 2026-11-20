@@ -106,7 +106,7 @@ The backend listens on `0.0.0.0:5000`. The database and uploads directories are 
 python seed.py
 ```
 
-The seed script replaces demo asset records with 31 asset records across all supported categories, assigns a unique photograph to every record, copies the photographs into the uploads directory, and demonstrates pagination across four pages. Seed photographs are stored locally for predictable offline use.
+The seed script replaces demo asset records with 30 assets across the six named categories. Each asset receives a unique category-matched photograph variant, and the data demonstrates pagination across three pages. Seed photographs are stored locally for predictable offline use.
 
 ### Frontend
 

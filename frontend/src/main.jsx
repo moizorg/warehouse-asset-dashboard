@@ -10,7 +10,6 @@ const CATEGORIES = [
   "Furniture",
   "Vehicles",
   "Safety Equipment",
-  "Other",
 ];
 
 function Icon({ name }) {
