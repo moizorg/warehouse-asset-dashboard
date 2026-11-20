@@ -237,6 +237,7 @@ function Dashboard({ onOpen, refreshToken }) {
           .sort((left, right) => right[1] - left[1])
           .map(([category, count]) => ({ category, count })),
       );
+      setActiveChartSegment(0);
     }
 
     loadDistribution().catch(() => {
@@ -274,25 +275,6 @@ function Dashboard({ onOpen, refreshToken }) {
     chartOffset += distributionTotal ? (item.count / distributionTotal) * 100 : 0;
     return `${categoryColors[index % categoryColors.length]} ${start}% ${chartOffset}%`;
   });
-  let labelOffset = 0;
-  const chartLabels = distribution.map((item) => {
-    const segmentStart = labelOffset;
-    const segmentSize = distributionTotal ? (item.count / distributionTotal) * 100 : 0;
-    labelOffset += segmentSize;
-    const angle = (segmentStart + segmentSize / 2) * 3.6;
-    const radius = 82;
-    const radians = ((angle - 90) * Math.PI) / 180;
-    return {
-      category: item.category,
-      count: item.count,
-      left: 50 + Math.cos(radians) * (radius / 220) * 100,
-      top: 50 + Math.sin(radians) * (radius / 220) * 100,
-      angle,
-    };
-  });
-  const activeChartLabel =
-    activeChartSegment === null ? null : chartLabels[activeChartSegment];
-
   function selectChartSegment(event) {
     if (!distribution.length) return;
     const bounds = event.currentTarget.getBoundingClientRect();
@@ -441,6 +423,36 @@ function Dashboard({ onOpen, refreshToken }) {
             <span>{distributionTotal} assets</span>
           </div>
           <div className="distribution-content">
+            <div className="category-details category-details-left">
+              {distribution.slice(0, Math.ceil(distribution.length / 2)).map((item, index) => (
+                <button
+                  type="button"
+                  className={activeChartSegment === index ? "category-detail active" : "category-detail"}
+                  key={item.category}
+                  onMouseEnter={() => setActiveChartSegment(index)}
+                  onFocus={() => setActiveChartSegment(index)}
+                  onClick={() => setActiveChartSegment(index)}
+                  aria-expanded={activeChartSegment === index}
+                >
+                  <span className="category-detail-main">
+                    <span
+                      className="legend-dot"
+                      style={{ background: categoryColors[index % categoryColors.length] }}
+                    />
+                    <span>
+                      <strong>{categoryChartLabels[item.category] || item.category}</strong>
+                      <small>{item.count} {item.count === 1 ? "Asset ID" : "Asset IDs"} ({distributionTotal ? Math.round((item.count / distributionTotal) * 100) : 0}%)</small>
+                    </span>
+                  </span>
+                  {activeChartSegment === index && (
+                    <span className="category-detail-expanded">
+                      <span>Category assets <strong>{item.count}</strong></span>
+                      <span>Share of total <strong>{distributionTotal ? Math.round((item.count / distributionTotal) * 100) : 0}%</strong></span>
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
             <div
               className="category-chart"
               role="img"
@@ -454,44 +466,43 @@ function Dashboard({ onOpen, refreshToken }) {
               onMouseLeave={() => setActiveChartSegment(null)}
               onClick={selectChartSegment}
             >
-              {chartLabels.map((label) => (
-                <span
-                  key={label.category}
-                  className="category-chart-label"
-                  style={{
-                    left: `${label.left}%`,
-                    top: `${label.top}%`,
-                  }}
-                  title={`${categoryChartLabels[label.category] || label.category}: ${label.count} IDs`}
-                  aria-hidden="true"
-                >
-                  <strong>{categoryChartLabels[label.category] || label.category}</strong>
-                  <small>{label.count}</small>
-                </span>
-              ))}
               <div className="category-chart-center">
                 <strong>{distributionTotal}</strong>
                 <small>Total IDs</small>
               </div>
-              {activeChartLabel && (
-                <div
-                  className="category-chart-tooltip"
-                  style={{
-                    left: `${activeChartLabel.left}%`,
-                    top: `${activeChartLabel.top}%`,
-                  }}
-                >
-                  <strong>{categoryChartLabels[activeChartLabel.category] || activeChartLabel.category}</strong>
-                  <span>
-                    {activeChartLabel.count} IDs
-                    <small>
-                      {distributionTotal
-                        ? `${Math.round((activeChartLabel.count / distributionTotal) * 100)}%`
-                        : "0%"}
-                    </small>
-                  </span>
-                </div>
-              )}
+            </div>
+            <div className="category-details category-details-right">
+              {distribution.slice(Math.ceil(distribution.length / 2)).map((item, offset) => {
+                const index = Math.ceil(distribution.length / 2) + offset;
+                return (
+                  <button
+                    type="button"
+                    className={activeChartSegment === index ? "category-detail active" : "category-detail"}
+                    key={item.category}
+                    onMouseEnter={() => setActiveChartSegment(index)}
+                    onFocus={() => setActiveChartSegment(index)}
+                    onClick={() => setActiveChartSegment(index)}
+                    aria-expanded={activeChartSegment === index}
+                  >
+                    <span className="category-detail-main">
+                      <span
+                        className="legend-dot"
+                        style={{ background: categoryColors[index % categoryColors.length] }}
+                      />
+                      <span>
+                        <strong>{categoryChartLabels[item.category] || item.category}</strong>
+                        <small>{item.count} {item.count === 1 ? "Asset ID" : "Asset IDs"} ({distributionTotal ? Math.round((item.count / distributionTotal) * 100) : 0}%)</small>
+                      </span>
+                    </span>
+                    {activeChartSegment === index && (
+                      <span className="category-detail-expanded">
+                        <span>Category assets <strong>{item.count}</strong></span>
+                        <span>Share of total <strong>{distributionTotal ? Math.round((item.count / distributionTotal) * 100) : 0}%</strong></span>
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </section>
