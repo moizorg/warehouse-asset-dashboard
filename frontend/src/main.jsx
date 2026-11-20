@@ -198,6 +198,7 @@ function Dashboard({ onOpen, refreshToken }) {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [data, setData] = useState({ items: [], pagination: { page: 1, pages: 1, total: 0 } });
+  const [distribution, setDistribution] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -212,11 +213,58 @@ function Dashboard({ onOpen, refreshToken }) {
     return () => { active = false; };
   }, [query, page, refreshToken]);
 
+  useEffect(() => {
+    let active = true;
+
+    async function loadDistribution() {
+      const records = [];
+      let result;
+      let distributionPage = 1;
+      do {
+        result = await fetchAssets({ search: query, page: distributionPage, limit: 100 });
+        records.push(...result.items);
+        distributionPage += 1;
+      } while (result.pagination.pages >= distributionPage);
+
+      if (!active) return;
+      const counts = records.reduce((totals, asset) => {
+        totals[asset.category] = (totals[asset.category] || 0) + 1;
+        return totals;
+      }, {});
+      setDistribution(
+        Object.entries(counts)
+          .sort((left, right) => right[1] - left[1])
+          .map(([category, count]) => ({ category, count })),
+      );
+    }
+
+    loadDistribution().catch(() => {
+      if (active) setDistribution([]);
+    });
+    return () => { active = false; };
+  }, [query, refreshToken]);
+
   function submitSearch(event) {
     event.preventDefault();
     setPage(1);
     setQuery(search.trim());
   }
+
+  const categoryColors = [
+    "#e06f2d",
+    "#77a2c4",
+    "#c8a66a",
+    "#b86e55",
+    "#77a98f",
+    "#d4b84e",
+  ];
+  const distributionTotal = distribution.reduce((total, item) => total + item.count, 0);
+  let chartOffset = 0;
+  const chartSegments = distribution.map((item, index) => {
+    const start = chartOffset;
+    chartOffset += distributionTotal ? (item.count / distributionTotal) * 100 : 0;
+    return `${categoryColors[index % categoryColors.length]} ${start}% ${chartOffset}%`;
+  });
 
   return (
     <main className="page-shell">
@@ -334,6 +382,49 @@ function Dashboard({ onOpen, refreshToken }) {
           </>
         )}
       </section>
+      {distribution.length > 0 && (
+        <section className="card distribution-card" aria-label="Category distribution chart">
+          <div className="distribution-heading">
+            <div>
+              <p className="eyebrow">Inventory analysis</p>
+              <h2>Asset categories</h2>
+            </div>
+            <span>{distributionTotal} assets</span>
+          </div>
+          <div className="distribution-content">
+            <div
+              className="category-chart"
+              role="img"
+              aria-label={`Category distribution for ${distributionTotal} assets`}
+              style={{
+                background: `conic-gradient(${chartSegments.join(", ")})`,
+              }}
+            >
+              <div className="category-chart-center">
+                <strong>{distributionTotal}</strong>
+                <small>Total IDs</small>
+              </div>
+            </div>
+            <div className="category-legend">
+              {distribution.map((item, index) => (
+                <div className="legend-row" key={item.category}>
+                  <span
+                    className="legend-dot"
+                    style={{ background: categoryColors[index % categoryColors.length] }}
+                  />
+                  <span className="legend-category">{item.category}</span>
+                  <strong>{item.count}</strong>
+                  <small>
+                    {distributionTotal
+                      ? `${Math.round((item.count / distributionTotal) * 100)}%`
+                      : "0%"}
+                  </small>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </main>
   );
 }

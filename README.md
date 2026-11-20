@@ -6,6 +6,8 @@ The interface uses a responsive dark warehouse-control theme inspired by modern 
 
 The dashboard list intentionally keeps a stable non-hovering table presentation. Interactive hover styling is retained for individual asset-detail surfaces and controls. 
 
+The dashboard footer includes a responsive category distribution chart that totals Asset IDs by category across the current search/filter result.
+
 ## Technology stack
 
 - React 19 with Vite and standard responsive CSS
