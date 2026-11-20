@@ -1,5 +1,6 @@
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from sqlite3 import IntegrityError
+from pathlib import Path
 from ..models import Asset
 from ..services import (
     save_image,
@@ -148,10 +149,18 @@ def get_photograph(asset_id):
     if not row:
         return jsonify(error="Asset not found."), 404
 
-    filename = row["photograph_path"].replace("\\", "/").rsplit("/", 1)[-1]
+    relative_path = row["photograph_path"].replace("\\", "/")
+    upload_root = Path(current_app.config["UPLOAD_FOLDER"]).resolve()
+    if relative_path.startswith("uploads/"):
+        relative_path = relative_path[len("uploads/"):]
+    photograph = (upload_root / relative_path).resolve()
+    if upload_root not in photograph.parents and photograph != upload_root:
+        return jsonify(error="Invalid photograph path."), 404
+    if not photograph.is_file():
+        return jsonify(error="Photograph file not found."), 404
     return send_from_directory(
-        current_app.config["UPLOAD_FOLDER"],
-        filename,
+        str(photograph.parent),
+        photograph.name,
         as_attachment=False,
         max_age=0,
     )
