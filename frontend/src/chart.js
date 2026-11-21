@@ -1,10 +1,10 @@
 export const CATEGORY_COLORS = [
-  "#ee7b35",
-  "#75a7cf",
-  "#d4ac65",
-  "#cb785e",
-  "#78ad93",
-  "#d8be4d",
+  "#4F8CFF",
+  "#36B37E",
+  "#E6A93A",
+  "#D96C75",
+  "#8B74D6",
+  "#39A9C9",
 ];
 
 export function buildDistribution(records) {

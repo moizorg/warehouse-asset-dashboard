@@ -373,16 +373,11 @@ function Dashboard({ onOpen, refreshToken }) {
             <span>{distributionTotal} assets</span>
           </div>
           <div className="distribution-content">
-            <div className="category-chart" role="img" aria-label={`Category distribution for ${distributionTotal} assets`}>
-              <svg viewBox="0 0 120 120" aria-hidden="true">
-                <circle className="chart-track" cx="60" cy="60" r="50" pathLength="100" />
-                {distribution.map((item, index) => {
-                  const offset = distribution.slice(0, index).reduce((total, segment) => total + (segment.count / distributionTotal) * 100, 0);
-                  const share = (item.count / distributionTotal) * 100;
-                  return <circle key={item.category} className={activeChartSegment === index ? "chart-segment active" : "chart-segment"} cx="60" cy="60" r="50" pathLength="100" stroke={CATEGORY_COLORS[index % CATEGORY_COLORS.length]} strokeDasharray={`${share - 1.5} ${100 - share + 1.5}`} strokeDashoffset={-offset} onMouseEnter={() => setActiveChartSegment(index)} onMouseLeave={() => setActiveChartSegment(null)} />;
-                })}
-              </svg>
-              <div className="category-chart-center"><strong>{distributionTotal}</strong><small>Total assets</small></div>
+            <div className="distribution-summary">
+              <div className="composition-bar" role="img" aria-label={`Category distribution for ${distributionTotal} assets`}>
+                {distribution.map((item, index) => <span key={item.category} style={{ background: CATEGORY_COLORS[index % CATEGORY_COLORS.length], flexGrow: item.count }} />)}
+              </div>
+              <p><strong>{distributionTotal}</strong> registered asset IDs <span>•</span> {distribution.length} categories</p>
             </div>
             <div className="category-details">
               {distribution.map((item, index) => {
