@@ -5,7 +5,7 @@ A responsive warehouse asset registry built as a practical full-stack prototype.
 **Live application:** [warehouse-asset-dashboard.vercel.app](https://warehouse-asset-dashboard.vercel.app)
 
 ## Features
-
+ 
 - Register an asset with a validated unique Asset ID, category, and photograph
 - Automatically store the creation date and UTC timestamp
 - Save records in SQLite through a Flask REST API
