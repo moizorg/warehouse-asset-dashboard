@@ -37,6 +37,10 @@ function Navigation({ setView }) {
         <span className="brand-mark"><Icon name="warehouse" /></span>
         <span><small>WAREHOUSE</small> <strong>ASSET CONTROL</strong></span>
       </button>
+      <button className="dashboard-button" onClick={() => setView("dashboard")} type="button" aria-label="Dashboard">
+        <Icon name="grid" />
+        <span>Dashboard</span>
+      </button>
     </header>
   );
 }
