@@ -437,6 +437,32 @@ tbody tr { cursor: default; }
 .distribution-summary p strong { color: white; font-size: 19px; }
 .distribution-summary p span { margin: 0 5px; color: var(--orange-strong); }
 
+.distribution-heading { align-items: start; margin-bottom: 24px; }
+.distribution-subtitle { margin: 8px 0 0; color: var(--muted); font-size: 14px; }
+.chart-menu { border: 0; background: transparent; color: #737b83; font-size: 19px; letter-spacing: 3px; cursor: pointer; }
+.analytics-metrics { display: flex; margin-bottom: 28px; }
+.analytics-metrics > div { min-width: 220px; padding-right: 32px; }
+.analytics-metrics > div + div { padding-left: 32px; border-left: 1px solid rgba(255,255,255,.09); }
+.analytics-metrics span { display: block; margin-bottom: 8px; color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+.analytics-metrics strong { color: #f2f4f5; font-size: 27px; letter-spacing: -.5px; }
+.analytics-metrics em { color: var(--orange-strong); font-size: 15px; font-style: normal; }
+.distribution-content { display: block; }
+.analytics-chart { position: relative; padding-top: 48px; }
+.analytics-chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart-grid-line { stroke: rgba(255,255,255,.11); stroke-dasharray: 2 7; stroke-width: 1; }
+.chart-grid-line.vertical { stroke: rgba(255,255,255,.09); }
+.chart-area { fill: rgba(234,88,12,.10); }
+.chart-line { fill: none; stroke: var(--orange-strong); stroke-linecap: round; stroke-linejoin: round; stroke-width: 3.5; filter: drop-shadow(0 5px 8px rgba(234,88,12,.28)); }
+.chart-point { stroke: #101010; stroke-width: 3; cursor: pointer; transition: r .16s ease, filter .16s ease; }
+.chart-point:hover, .chart-point.active { r: 8; filter: brightness(1.18); }
+.chart-tooltip { position: absolute; z-index: 1; top: 0; min-width: 164px; padding: 11px 13px; border: 1px solid rgba(255,255,255,.10); border-radius: 10px; background: rgba(14,14,14,.96); box-shadow: 0 16px 32px rgba(0,0,0,.36); transform: translateX(-50%); pointer-events: none; }
+.chart-tooltip span, .chart-tooltip small { display: block; color: var(--muted); font-size: 11px; }
+.chart-tooltip strong { display: block; margin: 4px 0; color: #f4f4f4; font-size: 15px; }
+.chart-tooltip small { color: #ffad80; }
+.chart-axis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; margin: 8px 22px 0; }
+.chart-axis button { overflow: hidden; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.chart-axis button.active, .chart-axis button:hover { color: #ffad80; }
+
 .empty-state {
   min-height: 300px;
   display: flex;
@@ -559,6 +585,17 @@ tbody tr { cursor: default; }
   .pagination { justify-content: space-between; }
   .pagination span { font-size: 12px; }
   .distribution-card { padding: 16px 14px; }
+  .distribution-heading h2 { font-size: 21px; }
+  .distribution-subtitle { font-size: 12px; line-height: 1.45; }
+  .analytics-metrics { margin-bottom: 22px; }
+  .analytics-metrics > div { min-width: 0; flex: 1; padding-right: 14px; }
+  .analytics-metrics > div + div { padding-left: 14px; }
+  .analytics-metrics strong { font-size: 21px; }
+  .analytics-metrics em { display: block; margin-top: 2px; font-size: 11px; }
+  .analytics-chart { padding-top: 54px; }
+  .chart-tooltip { min-width: 146px; padding: 9px 10px; }
+  .chart-axis { margin: 6px 10px 0; }
+  .chart-axis button { font-size: 8px; }
   .distribution-content {
     grid-template-columns: 1fr;
     justify-items: center;

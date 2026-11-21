@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { apiUrl, createAsset, fetchAsset, fetchAssets } from "./api";
-import { buildDistribution, CATEGORY_COLORS } from "./chart";
+import { buildDistribution } from "./chart";
 import "./styles.css";
 
 const CATEGORIES = [
@@ -246,6 +246,21 @@ function Dashboard({ onOpen, refreshToken }) {
   }
 
   const distributionTotal = distribution.reduce((total, item) => total + item.count, 0);
+  const chartWidth = 720;
+  const chartHeight = 230;
+  const chartPadding = { top: 22, right: 22, bottom: 28, left: 28 };
+  const chartMaximum = Math.max(...distribution.map((item) => item.count), 1);
+  const chartCoordinates = distribution.map((item, index) => ({
+    ...item,
+    x: chartPadding.left + (index * (chartWidth - chartPadding.left - chartPadding.right)) / Math.max(distribution.length - 1, 1),
+    y: chartPadding.top + ((chartMaximum - item.count) / chartMaximum) * (chartHeight - chartPadding.top - chartPadding.bottom),
+  }));
+  const chartLine = chartCoordinates.map((item) => `${item.x},${item.y}`).join(" ");
+  const chartArea = chartCoordinates.length
+    ? `M ${chartCoordinates[0].x} ${chartHeight - chartPadding.bottom} L ${chartCoordinates.map((item) => `${item.x} ${item.y}`).join(" L ")} L ${chartCoordinates.at(-1).x} ${chartHeight - chartPadding.bottom} Z`
+    : "";
+  const activeChartIndex = activeChartSegment ?? 0;
+  const activeChartItem = distribution[activeChartIndex];
 
   return (
     <main className="page-shell">
@@ -364,29 +379,32 @@ function Dashboard({ onOpen, refreshToken }) {
         )}
       </section>
       {distribution.length > 0 && (
-        <section className="card distribution-card" aria-label="Category distribution chart">
+        <section className="card distribution-card" aria-label="Asset category analytics chart">
           <div className="distribution-heading">
             <div>
-              <p className="eyebrow">Inventory analysis</p>
-              <h2>Asset category distribution</h2>
+              <p className="eyebrow">Inventory analytics</p>
+              <h2>Asset category activity</h2>
+              <p className="distribution-subtitle">Review the current mix of registered warehouse assets.</p>
             </div>
-            <span>{distributionTotal} assets</span>
+            <button className="chart-menu" type="button" aria-label="Chart options">•••</button>
+          </div>
+          <div className="analytics-metrics">
+            <div><span>Total assets</span><strong>{distributionTotal}</strong></div>
+            <div><span>Largest category</span><strong>{activeChartItem.category} <em>{activeChartItem.count} IDs</em></strong></div>
           </div>
           <div className="distribution-content">
-            <div className="distribution-summary">
-              <div className="composition-bar" role="img" aria-label={`Category distribution for ${distributionTotal} assets`}>
-                {distribution.map((item, index) => <span key={item.category} style={{ background: CATEGORY_COLORS[index % CATEGORY_COLORS.length], flexGrow: item.count }} />)}
+            <div className="analytics-chart" onMouseLeave={() => setActiveChartSegment(null)}>
+              <div className="chart-tooltip" style={{ left: `${Math.min(88, Math.max(12, (chartCoordinates[activeChartIndex].x / chartWidth) * 100))}%` }}>
+                <span>{activeChartItem.category}</span><strong>{activeChartItem.count} asset IDs</strong><small>{Math.round((activeChartItem.count / distributionTotal) * 100)}% of inventory</small>
               </div>
-              <p><strong>{distributionTotal}</strong> registered asset IDs <span>•</span> {distribution.length} categories</p>
-            </div>
-            <div className="category-details">
-              {distribution.map((item, index) => {
-                const percentage = Math.round((item.count / distributionTotal) * 100);
-                return <button type="button" className={activeChartSegment === index ? "category-detail active" : "category-detail"} key={item.category} onMouseEnter={() => setActiveChartSegment(index)} onFocus={() => setActiveChartSegment(index)} onClick={() => setActiveChartSegment(index)} aria-pressed={activeChartSegment === index}>
-                  <span className="category-detail-main"><span className="legend-dot" style={{ background: CATEGORY_COLORS[index % CATEGORY_COLORS.length] }} /><strong>{item.category}</strong></span>
-                  <span className="category-detail-value"><strong>{item.count}</strong><small>{percentage}% of inventory</small></span>
-                </button>;
-              })}
+              <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} role="img" aria-label={`Asset category distribution: ${distribution.map((item) => `${item.category} ${item.count}`).join(", ")}`}>
+                {[0, 1, 2, 3].map((row) => <line className="chart-grid-line" key={row} x1={chartPadding.left} x2={chartWidth - chartPadding.right} y1={chartPadding.top + row * ((chartHeight - chartPadding.top - chartPadding.bottom) / 3)} y2={chartPadding.top + row * ((chartHeight - chartPadding.top - chartPadding.bottom) / 3)} />)}
+                {chartCoordinates.map((item) => <line className="chart-grid-line vertical" key={item.category} x1={item.x} x2={item.x} y1={chartPadding.top} y2={chartHeight - chartPadding.bottom} />)}
+                <path className="chart-area" d={chartArea} />
+                <polyline className="chart-line" points={chartLine} />
+                {chartCoordinates.map((item, index) => <circle key={item.category} className={activeChartIndex === index ? "chart-point active" : "chart-point"} cx={item.x} cy={item.y} r="6" fill="#ea580c" onMouseEnter={() => setActiveChartSegment(index)} onFocus={() => setActiveChartSegment(index)} onClick={() => setActiveChartSegment(index)} tabIndex="0" role="button" aria-label={`${item.category}: ${item.count} asset IDs`} />)}
+              </svg>
+              <div className="chart-axis">{distribution.map((item, index) => <button type="button" className={activeChartIndex === index ? "active" : ""} key={item.category} onClick={() => setActiveChartSegment(index)}>{item.category}</button>)}</div>
             </div>
           </div>
         </section>
