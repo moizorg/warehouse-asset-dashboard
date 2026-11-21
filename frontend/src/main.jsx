@@ -14,11 +14,18 @@ const CATEGORIES = [
 ];
 
 function Icon({ name }) {
+  if (name === "warehouse") {
+    return (
+      <svg className="icon warehouse-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 9.5 12 4l9 5.5v9H3v-9Z" />
+        <path d="M7 18v-6h3v6M14 18v-6h3v6M3 9.5l9 4.5 9-4.5" />
+      </svg>
+    );
+  }
   const icons = {
     grid: "▦",
     plus: "+",
     search: "⌕",
-    warehouse: "■",
   };
   return <span className="icon" aria-hidden="true">{icons[name] || ""}</span>;
 }
@@ -39,7 +46,7 @@ function StatusMessage({ message, type }) {
   return <div className={`status ${type}`} role={type === "error" ? "alert" : "status"}>{message}</div>;
 }
 
-function AssetForm({ onCreated, onCancel }) {
+function AssetForm({ onCreated }) {
   const [assetIdentifier, setAssetIdentifier] = useState("");
   const [category, setCategory] = useState("");
   const [photograph, setPhotograph] = useState(null);
@@ -118,7 +125,6 @@ function AssetForm({ onCreated, onCancel }) {
           <p className="eyebrow">Asset registry</p>
           <h1>Create new asset</h1>
         </div>
-        <button type="button" className="button secondary" onClick={onCancel}>Cancel</button>
       </div>
       <form className="asset-form card" onSubmit={handleSubmit} noValidate>
         <StatusMessage message={status.message} type={status.type} />
@@ -161,7 +167,6 @@ function AssetForm({ onCreated, onCancel }) {
           </div>
         )}
         <div className="form-actions">
-          <button type="button" className="button secondary" onClick={onCancel}>Cancel</button>
           <button type="submit" className="button primary" disabled={submitting}>
             {submitting ? "Saving…" : "Save asset"}
           </button>
@@ -465,7 +470,7 @@ function App() {
       <Navigation setView={navigate} />
       <button data-add-asset hidden onClick={() => navigate("create")} />
       {view === "dashboard" && <Dashboard key={dashboardResetToken} onOpen={openDetail} refreshToken={refreshToken} />}
-      {view === "create" && <AssetForm onCreated={createdAsset} onCancel={() => navigate("dashboard")} />}
+      {view === "create" && <AssetForm onCreated={createdAsset} />}
       {view === "detail" && <AssetDetail id={detailId} onBack={() => navigate("dashboard")} />}
     </>
   );
