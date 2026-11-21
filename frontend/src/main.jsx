@@ -194,6 +194,7 @@ function Dashboard({ onOpen, refreshToken }) {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [data, setData] = useState({ items: [], pagination: { page: 1, pages: 1, total: 0 } });
+  const [inventorySummary, setInventorySummary] = useState({ total: 0, pages: 1 });
   const [distribution, setDistribution] = useState([]);
   const [activeChartSegment, setActiveChartSegment] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -226,6 +227,12 @@ function Dashboard({ onOpen, refreshToken }) {
       if (!active) return;
       setDistribution(buildDistribution(records));
       setActiveChartSegment(0);
+      if (!query) {
+        setInventorySummary({
+          total: result.pagination.total,
+          pages: Math.max(1, Math.ceil(result.pagination.total / 10)),
+        });
+      }
     }
 
     loadDistribution().catch(() => {
@@ -272,7 +279,7 @@ function Dashboard({ onOpen, refreshToken }) {
       <section className="metric-grid" aria-label="Inventory summary">
         <article className="metric-card">
           <div className="metric-icon">▦</div>
-          <div><small>Total assets</small><strong>{data.pagination.total}</strong></div>
+          <div><small>Total assets</small><strong>{query ? data.pagination.total : (inventorySummary.total || data.pagination.total)}</strong></div>
           <span className="trend">Live</span>
         </article>
         <article className="metric-card">
@@ -282,7 +289,7 @@ function Dashboard({ onOpen, refreshToken }) {
         </article>
         <article className="metric-card">
           <div className="metric-icon blue">◉</div>
-          <div><small>Latest page</small><strong>{data.pagination.page}<em> / {data.pagination.pages}</em></strong></div>
+          <div><small>Latest page</small><strong>{data.pagination.page}<em> / {query ? data.pagination.pages : (inventorySummary.pages || data.pagination.pages)}</em></strong></div>
           <span className="trend">Synced</span>
         </article>
       </section>
@@ -381,7 +388,6 @@ function Dashboard({ onOpen, refreshToken }) {
               <h2>Asset category activity</h2>
               <p className="distribution-subtitle">Review the current mix of registered warehouse assets.</p>
             </div>
-            <button className="chart-menu" type="button" aria-label="Chart options">•••</button>
           </div>
           <div className="analytics-metrics">
             <div><span>Total assets</span><strong>{distributionTotal}</strong></div>
@@ -426,7 +432,6 @@ function AssetDetail({ id, onBack }) {
           <p className="eyebrow">Asset details</p>
           <h1>{asset.asset_identifier}</h1>
         </div>
-        <button className="button secondary" onClick={onBack}>← Back to dashboard</button>
       </div>
       <section className="detail-grid">
         <div className="card detail-photo">

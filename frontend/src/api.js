@@ -13,14 +13,14 @@ export function apiUrl(path) {
 export async function fetchAssets({ search = "", page = 1, limit = 10 } = {}) {
   const params = new URLSearchParams({ page: String(page), limit: String(limit) });
   if (search) params.set("search", search);
-  const response = await fetch(apiUrl(`/api/assets?${params}`));
+  const response = await fetch(apiUrl(`/api/assets?${params}`), { cache: "no-store" });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || "Unable to load assets.");
   return data;
 }
 
 export async function fetchAsset(id) {
-  const response = await fetch(apiUrl(`/api/assets/${id}`));
+  const response = await fetch(apiUrl(`/api/assets/${id}`), { cache: "no-store" });
   const data = await response.json();
   if (!response.ok) throw new Error(data.error || "Unable to load asset.");
   return data;
