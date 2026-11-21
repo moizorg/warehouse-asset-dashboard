@@ -1,100 +1,66 @@
 # Warehouse Asset Management Dashboard
 
-A complete local-network prototype for registering and viewing warehouse assets. It uses a React frontend, Flask REST API, and SQLite, with photograph files stored outside the database.
+A responsive warehouse asset registry built as a practical full-stack prototype. Operators can register an asset with an ID, category, and photograph; search the inventory; and inspect each saved record. The dashboard is designed for a warehouse computer on a local network while keeping the API boundaries ready for future barcode, RFID, or automated data sources.
 
-The interface uses a responsive dark warehouse-control theme inspired by modern operations dashboards: deep navy surfaces, dark burnt-orange accents, compact live metrics, glass-style panels, hover feedback, fixed desktop navigation, and a mobile bottom navigation bar.
+**Live application:** [warehouse-asset-dashboard.vercel.app](https://warehouse-asset-dashboard.vercel.app)
 
-The dashboard list intentionally keeps a stable non-hovering table presentation. Interactive hover styling is retained for individual asset-detail surfaces and controls. 
+## Features
 
-The dashboard footer includes a responsive category distribution chart that totals Asset IDs by category across the current search/filter result. Category labels are kept outside the chart; desktop layouts show expandable details on the left and right, while mobile layouts stack them below the chart.
+- Register an asset with a validated unique Asset ID, category, and photograph
+- Automatically store the creation date and UTC timestamp
+- Save records in SQLite through a Flask REST API
+- Search asset records by Asset ID, case-insensitively
+- View an individual asset record and its uploaded photograph
+- Review live summary metrics and an interactive category analytics chart
+- Use the dashboard on desktop and mobile layouts
+- Run the frontend and API on the same warehouse network
 
-## Technology stack
+## Screenshots
 
-- React 19 with Vite and standard responsive CSS
-- Python 3.12 with Flask
-- SQLite
-- Flask-CORS
-- Pytest
+| Dashboard | Asset details |
+| --- | --- |
+| ![Dashboard desktop](docs/screenshots/dashboard-desktop.png) | ![Asset detail](docs/screenshots/asset-detail.png) |
 
-React and Flask were chosen to keep the prototype lightweight and easy to run on a single warehouse computer.
+| Create asset | Mobile dashboard |
+| --- | --- |
+| ![Create asset](docs/screenshots/create-asset.png) | ![Mobile dashboard](docs/screenshots/dashboard-mobile.png) |
+
+## Technology
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | React 19, Vite, responsive CSS |
+| Backend | Python 3.12, Flask, Flask-CORS |
+| Database | SQLite |
+| File storage | Local uploads directory |
+| Testing | Pytest and Vitest |
+| Deployment | Vercel |
 
 ## Architecture
 
 ```text
-Browser
-  |
-  | REST / JSON and multipart image upload
-  v
-React frontend -> Flask routes/controllers -> Asset services -> SQLite database
-                                       |
-                                       +-> Dedicated uploads directory
+Browser (desktop or mobile)
+            |
+            | REST/JSON and multipart image upload
+            v
+React application --> Flask API --> Services --> SQLite
+                                   |
+                                   +--> Photograph uploads
 ```
 
-The backend keeps HTTP handling in `app/routes`, validation and file handling in `app/services.py`, and SQLite access in `app/database.py`. This separation allows future barcode, RFID, IoT, ERP, authentication, or API-key integrations to reuse domain services.
+HTTP routes remain separate from validation and file-handling services. This allows a barcode scanner, RFID reader, IoT service, ERP, or WMS integration to submit assets through the same application boundary later.
 
-## Database schema
-
-Table: `assets`
-
-| Column | Type | Constraints |
-|---|---|---|
-| id | INTEGER | Primary key, autoincrement |
-| asset_identifier | TEXT | Not null, unique, case-insensitive |
-| category | TEXT | Not null |
-| photograph_path | TEXT | Not null |
-| created_at | TEXT | Not null, UTC SQLite timestamp |
-
-Indexes exist for `asset_identifier` and `category`. Images are kept in `backend/uploads/` and SQLite stores their relative path.
-
-## API documentation
-
-### Create an asset
-
-`POST /api/assets`
-
-Multipart fields:
-
-- `asset_identifier` - required, trimmed, 1-64 characters
-- `category` - required
-- `photograph` - required PNG, JPG, or JPEG, maximum 5 MB
-
-```bash
-curl -F "asset_identifier=WH-MCH-001" -F "category=Machinery" -F "photograph=@photo.jpg" http://localhost:5000/api/assets
-```
-
-Status codes: `201` created, `400` validation error, `409` duplicate Asset ID, `413` file too large.
-
-### List assets
-
-`GET /api/assets?search=asset123&page=1&limit=10`
-
-Search is case-insensitive. Response includes `items` and pagination metadata.
-
-### Fetch one asset
-
-`GET /api/assets/:id`
-
-### Fetch photograph
-
-`GET /api/assets/:id/photograph`
-
-Returns the stored image.
-
-Error responses use JSON: `{ "error": "Description" }`.
-
-## Setup
+## Quick Start
 
 ### Prerequisites
 
+- Node.js 20+
 - Python 3.12+
-- Node.js 20+ and npm
 
-### Backend
-
-Windows PowerShell:
+### 1. Start the API
 
 ```powershell
-cd C:\warehouse-asset-dashboard\backend
+cd backend
 py -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -102,20 +68,18 @@ Copy-Item .env.example .env
 python app.py
 ```
 
-The backend listens on `0.0.0.0:5000`. The database and uploads directories are created automatically. Seed sample records:
+The API starts on `http://localhost:5000`. Seed the local database with 30 demo records when needed:
 
 ```powershell
 python seed.py
 ```
 
-The seed script replaces demo asset records with 30 assets across the six named categories in a deterministic randomized order. Each category has five Asset IDs, and repeated cars, furniture, hammers, laptops, machines, and PPE receive different hue, saturation, brightness, and category-tint treatments while retaining the original composition.
+### 2. Start the Frontend
 
-### Frontend
-
-In another terminal:
+Open a second terminal:
 
 ```powershell
-cd C:\warehouse-asset-dashboard\frontend
+cd frontend
 npm install
 Copy-Item .env.example .env
 npm run dev
@@ -123,126 +87,69 @@ npm run dev
 
 Open `http://localhost:5173`.
 
-### Vercel deployment
+## Local-Network Access
 
-**Live production deployment:** [https://warehouse-asset-dashboard.vercel.app](https://warehouse-asset-dashboard.vercel.app)
+For phones or other computers on the warehouse network, use the warehouse computer's IPv4 address instead of `localhost`.
 
-The production dashboard is deployed on Vercel and serves the React frontend with the Flask REST API from the same origin. The deployment exposes the seeded asset dashboard, search and pagination, photograph endpoints, asset details, and category distribution chart.
+1. Run `ipconfig` and identify the active adapter address, for example `192.168.1.25`.
+2. Set `VITE_API_BASE_URL=http://192.168.1.25:5000` in `frontend/.env`.
+3. Add the frontend origin to `ALLOWED_ORIGINS` in `backend/.env`, for example `http://192.168.1.25:5173`.
+4. Restart both services and open `http://192.168.1.25:5173` on the other device.
+5. Allow inbound TCP ports `5000` and `5173` through the private Windows Firewall profile.
 
-The repository includes a Vercel configuration for a single-origin deployment:
+Do not point a mobile device at `localhost`; it would refer to the mobile device itself.
 
-```powershell
-vercel login
-vercel
-vercel --prod
-```
+## API
 
-Set `VITE_API_BASE_URL=/api` in Vercel's project environment variables. The Python API is exposed through `/api/index`, and Vite serves the React application from the same deployment.
+| Endpoint | Description |
+| --- | --- |
+| `POST /api/assets` | Create an asset with multipart form data |
+| `GET /api/assets?search=&page=&limit=` | List or search asset records |
+| `GET /api/assets/:id` | Fetch one asset record |
+| `GET /api/assets/:id/photograph` | Fetch an asset photograph |
 
-For Vercel, SQLite and uploads use ephemeral `/tmp` storage. Data and photographs can change when serverless instances restart or scale. Use an external SQLite-compatible persistent volume or object storage before production use.
+`POST /api/assets` accepts `asset_identifier`, `category`, and `photograph`. Supported photographs are PNG, JPG, and JPEG files up to 5 MB. The API returns `201` on creation, `400` for invalid input, `409` for a duplicate Asset ID, and `413` for files that exceed the limit.
 
-### Docker
+## Data Model
 
-```powershell
-docker compose up --build
-```
+| Field | Notes |
+| --- | --- |
+| `id` | Auto-incremented primary key |
+| `asset_identifier` | Required, unique, case-insensitive text identifier |
+| `category` | Required category value |
+| `photograph_path` | Relative storage path for the uploaded image |
+| `created_at` | Automatically assigned UTC SQLite timestamp |
 
-Docker volumes persist SQLite and uploaded photographs.
-
-## Environment variables
-
-Backend:
-
-| Variable | Default | Purpose |
-|---|---|---|
-| HOST | `0.0.0.0` | Network bind address |
-| PORT | `5000` | Backend port |
-| DATABASE_PATH | `./data/assets.db` | SQLite file location |
-| UPLOAD_FOLDER | `./uploads` | Stored photograph directory |
-| ALLOWED_ORIGINS | localhost Vite origins | CORS allowlist |
-
-Frontend:
-
-| Variable | Default | Purpose |
-|---|---|---|
-| VITE_API_BASE_URL | empty (same-origin API calls) | Backend origin, for example `http://192.168.1.25:5000` |
-
-Do not set frontend API URL to `localhost` if phones or other devices will access it. The frontend source never hardcodes an API host.
-
-## Local network access
-
-1. On the warehouse computer, find its IPv4 address:
+## Testing
 
 ```powershell
-ipconfig
-```
-
-Use the address shown under the active Ethernet or Wi-Fi adapter, such as `192.168.1.25`.
-
-2. Start the backend and frontend as shown above.
-3. Set `frontend/.env`:
-
-```text
-VITE_API_BASE_URL=http://192.168.1.25:5000
-```
-
-4. Restart Vite.
-5. On a phone or another computer on the same network, open `http://192.168.1.25:5173`.
-6. Allow inbound TCP ports `5000` and `5173` through the Windows Firewall for the private network profile.
-
-CORS remains restricted to the origins in `ALLOWED_ORIGINS`. Add approved LAN origins explicitly, for example `http://192.168.1.25:5173`. For persistence, keep `DATABASE_PATH` and `UPLOAD_FOLDER` on a persistent volume or dedicated warehouse drive and back them up.
-
-## Tests
-
-Backend:
-
-```powershell
+# Backend
 cd backend
 pytest -q
-```
 
-Frontend build:
-
-```powershell
+# Frontend production build and tests
 cd frontend
 npm run build
 npm test
 ```
 
-The backend tests cover database initialization, creation, duplicate rejection, case-insensitive search, individual fetch, invalid file types, oversized files, and API validation.
+Backend coverage includes database initialization, create/read/search operations, duplicate protection, input validation, file type and size validation, and photograph persistence. Frontend coverage verifies category-distribution calculation logic.
 
-## Screenshots
+## Deployment
 
-Screenshots will be placed in [`docs/screenshots/`](docs/screenshots/):
+The included Vercel configuration builds the React application and routes `/api/*` requests to the Flask serverless function.
 
-- `dashboard-desktop.png`
-- `dashboard-mobile.png`
-- `create-asset.png`
-- `create-asset-mobile.png`
-- `image-preview.png`
-- `asset-detail.png`
-- `empty-search.png`
+```powershell
+vercel login
+vercel --prod
+```
 
-The screenshots demonstrate the dark, responsive operations-dashboard interface, including inventory metrics, photograph thumbnails, image preview, individual asset details, and empty search results.
+The production deployment uses temporary serverless storage for SQLite and image uploads. This is suitable for a demonstration, but a real deployment should use a persistent database and object storage before operational use.
 
-## Known limitations
+## Limitations and Next Steps
 
-- No authentication or role management
-- No image replacement or deletion
-- No barcode/RFID-specific fields
-- SQLite is suitable for a small on-premises prototype, not high-write/high-concurrency production deployment
-- Seed photographs are generated demo images only, and production deployment requires real operator photographs
-- No antivirus scanning or malware content validation beyond extension, MIME selection, and server-side size checks
-
-## Future integration possibilities
-
-- Barcode and QR scanners
-- RFID reader services
-- Industrial IoT feed ingestion
-- ERP or WMS synchronization
-- Bulk uploads and CSV import
-- API keys or OAuth
-- Authentication and role-based authorization
-- Audit history
-- Additional asset metadata
-- Image replacement and retention policies
+- Authentication, operator roles, and audit history are not included
+- Images cannot yet be replaced or deleted
+- SQLite is appropriate for a small warehouse prototype, not high-concurrency use
+- Uploads receive basic type and size validation; production use should add malware scanning
+- Future integrations can include barcode/QR scanners, RFID readers, bulk import, ERP/WMS synchronization, and automated IoT feeds
