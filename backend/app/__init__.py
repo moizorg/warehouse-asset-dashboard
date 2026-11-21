@@ -10,10 +10,12 @@ def create_app(test_config=None):
     app = Flask(__name__)
     backend_root = Path(__file__).resolve().parent.parent
     default_database = backend_root / "data" / "assets.db"
+    turso_database = os.getenv("TURSO_DATABASE_URL")
+    database_path = turso_database or os.getenv("DATABASE_PATH", str(default_database))
     default_upload_folder = backend_root / "uploads"
     app.config.update(
         TESTING=False,
-        DATABASE=os.getenv("DATABASE_PATH", str(default_database)),
+        DATABASE=database_path,
         UPLOAD_FOLDER=os.getenv("UPLOAD_FOLDER", str(default_upload_folder)),
         MAX_CONTENT_LENGTH=5 * 1024 * 1024,
         ALLOWED_ORIGINS=os.getenv(

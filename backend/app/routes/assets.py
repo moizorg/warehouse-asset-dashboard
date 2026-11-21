@@ -1,4 +1,5 @@
-from flask import Blueprint, current_app, jsonify, request, send_from_directory
+from flask import Blueprint, current_app, jsonify, request, send_file, send_from_directory
+from io import BytesIO
 from sqlite3 import IntegrityError
 from pathlib import Path
 from ..models import Asset
@@ -50,6 +51,9 @@ def create_asset():
             request.files.get("photograph"),
             current_app.config["UPLOAD_FOLDER"],
         )
+        photograph = request.files.get("photograph")
+        photograph.stream.seek(0)
+        photograph_data = photograph.read()
     except ValidationError as error:
         return jsonify(error=str(error)), error.status
 
@@ -58,10 +62,10 @@ def create_asset():
         with database.connect() as connection:
             cursor = connection.execute(
                 """
-                INSERT INTO assets (asset_identifier, category, photograph_path, created_at)
-                VALUES (?, ?, ?, datetime('now'))
+                INSERT INTO assets (asset_identifier, category, photograph_path, photograph_data, created_at)
+                VALUES (?, ?, ?, ?, datetime('now'))
                 """,
-                (identifier, category, photograph_path),
+                (identifier, category, photograph_path, photograph_data),
             )
             asset_id = cursor.lastrowid
             row = connection.execute(
@@ -144,10 +148,20 @@ def get_photograph(asset_id):
     database = current_app.extensions["database"]
     with database.connect() as connection:
         row = connection.execute(
-            "SELECT photograph_path FROM assets WHERE id = ?", (asset_id,)
+            "SELECT photograph_path, photograph_data FROM assets WHERE id = ?", (asset_id,)
         ).fetchone()
     if not row:
         return jsonify(error="Asset not found."), 404
+    photograph_data = row["photograph_data"]
+    if photograph_data:
+        suffix = row["photograph_path"].lower().rsplit(".", 1)[-1]
+        mimetype = "image/png" if suffix == "png" else "image/jpeg"
+        return send_file(
+            BytesIO(photograph_data),
+            mimetype=mimetype,
+            as_attachment=False,
+            download_name=row["photograph_path"].rsplit("/", 1)[-1],
+        )
 
     relative_path = row["photograph_path"].replace("\\", "/")
     upload_root = Path(current_app.config["UPLOAD_FOLDER"]).resolve()

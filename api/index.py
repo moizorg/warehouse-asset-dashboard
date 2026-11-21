@@ -18,7 +18,8 @@ if deployment_url:
         ) if origin
     )
 os.environ["ALLOWED_ORIGINS"] = approved_origins or "http://localhost:5173"
-os.environ["DATABASE_PATH"] = os.getenv("DATABASE_PATH", "/tmp/warehouse-assets.db")
+if not os.getenv("TURSO_DATABASE_URL"):
+    os.environ["DATABASE_PATH"] = os.getenv("DATABASE_PATH", "/tmp/warehouse-assets.db")
 os.environ["UPLOAD_FOLDER"] = os.getenv("UPLOAD_FOLDER", "/tmp/warehouse-uploads")
 
 from app import create_app
@@ -113,18 +114,21 @@ def seed_demo_assets():
                 base = base.resize((960, 720), Image.Resampling.LANCZOS)
                 base = apply_asset_color_variant(base, category, occurrence)
                 base.save(upload_folder / filename, "JPEG", quality=88)
+                with open(upload_folder / filename, "rb") as photograph:
+                    photograph_data = photograph.read()
 
             with database.connect() as connection:
                 connection.execute(
                     """
                     INSERT INTO assets
-                    (asset_identifier, category, photograph_path, created_at)
-                    VALUES (?, ?, ?, datetime('now'))
+                    (asset_identifier, category, photograph_path, photograph_data, created_at)
+                    VALUES (?, ?, ?, ?, datetime('now'))
                     """,
                     (
                         identifier,
                         category,
                         f"uploads/{filename}",
+                        photograph_data,
                     ),
                 )
 
