@@ -23,18 +23,13 @@ function Icon({ name }) {
   return <span className="icon" aria-hidden="true">{icons[name] || ""}</span>;
 }
 
-function Navigation({ view, setView }) {
+function Navigation({ setView }) {
   return (
     <header className="topbar">
       <button className="brand" onClick={() => setView("dashboard")} aria-label="Open dashboard">
         <span className="brand-mark"><Icon name="warehouse" /></span>
         <span><small>WAREHOUSE</small> <strong>ASSET CONTROL</strong></span>
       </button>
-      <nav aria-label="Primary navigation">
-        <button className={view === "dashboard" ? "nav-link active" : "nav-link"} onClick={() => setView("dashboard")}>
-          <Icon name="grid" /> Dashboard
-        </button>
-      </nav>
     </header>
   );
 }
@@ -467,7 +462,7 @@ function App() {
 
   return (
     <>
-      <Navigation view={view} setView={navigate} />
+      <Navigation setView={navigate} />
       <button data-add-asset hidden onClick={() => navigate("create")} />
       {view === "dashboard" && <Dashboard key={dashboardResetToken} onOpen={openDetail} refreshToken={refreshToken} />}
       {view === "create" && <AssetForm onCreated={createdAsset} onCancel={() => navigate("dashboard")} />}
