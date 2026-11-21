@@ -15,16 +15,6 @@ A responsive warehouse asset registry built as a practical full-stack prototype.
 - Use the dashboard on desktop and mobile layouts
 - Run the frontend and API on the same warehouse network
 
-## Screenshots
-
-| Dashboard | Asset details |
-| --- | --- |
-| ![Dashboard desktop](docs/screenshots/dashboard-desktop.png) | ![Asset detail](docs/screenshots/asset-detail.png) |
-
-| Create asset | Mobile dashboard |
-| --- | --- |
-| ![Create asset](docs/screenshots/create-asset.png) | ![Mobile dashboard](docs/screenshots/dashboard-mobile.png) |
-
 ## Technology
 
 | Layer | Technology |
