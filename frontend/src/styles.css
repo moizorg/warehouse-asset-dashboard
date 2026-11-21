@@ -76,7 +76,6 @@ button, input, select { transition: color .18s ease, background .18s ease, borde
   background: linear-gradient(145deg, rgba(198,93,33,.18), rgba(198,93,33,.04));
   box-shadow: inset 0 1px rgba(255,255,255,.06);
 }
-.topbar-right { display: flex; align-items: center; align-self: stretch; gap: 20px; }
 .topbar nav { display: flex; align-self: stretch; }
 .nav-link {
   position: relative;
@@ -105,34 +104,6 @@ button, input, select { transition: color .18s ease, background .18s ease, borde
 .nav-link.active::after { transform: scaleX(1); }
 .nav-link:hover { color: var(--orange-strong); background: rgba(198,93,33,.055); }
 .nav-link:hover::after { transform: scaleX(.7); }
-.operator {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 0;
-  border-radius: 10px;
-  background: none;
-  color: white;
-  padding: 5px 7px;
-}
-.operator:hover { background: rgba(198,93,33,.08); }
-.operator:hover .operator-avatar { transform: translateY(-2px) scale(1.04); box-shadow: 0 0 0 4px rgba(198,93,33,.16); }
-.operator-copy { display: flex; flex-direction: column; align-items: flex-end; }
-.operator-copy small { color: var(--muted); font-size: 10px; }
-.operator-copy strong { font-size: 12px; }
-.operator-avatar {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: linear-gradient(145deg, #e06f2d, #9f4217);
-  color: #15130e;
-  font-size: 11px;
-  font-weight: 900;
-  box-shadow: 0 0 0 3px rgba(198,93,33,.12);
-  transition: transform .18s ease, box-shadow .18s ease;
-}
 
 .page-shell {
   position: relative;
@@ -557,9 +528,6 @@ tbody tr { cursor: default; }
   .topbar nav { position: fixed; z-index: 20; left: 12px; right: 12px; bottom: 12px; height: 58px; border: 1px solid var(--line); border-radius: 12px; background: rgba(8,8,8,.96); backdrop-filter: blur(16px); box-shadow: 0 12px 34px rgba(0,0,0,.72); }
   .nav-link { flex: 1; min-width: 0; }
   .nav-link::after { left: 32%; right: 32%; }
-  .operator-copy { display: none; }
-  .operator-avatar { width: 34px; height: 34px; }
-  .topbar-right { gap: 4px; }
   .page-shell { padding: 24px 14px 88px; }
   .page-heading { align-items: center; }
   .page-heading h1 { font-size: 28px; }
